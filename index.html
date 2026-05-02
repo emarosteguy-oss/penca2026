@@ -13,10 +13,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --gold:#C9A84C;--gold2:#E8C96A;--deep:#080C18;--dark:#0E1525;
-  --card:#131D30;--card2:#192236;--border:rgba(201,168,76,0.15);
-  --text:#E8EAF0;--muted:#6B7A94;--green:#00E676;--red:#FF4B4B;
+  --gold:#E8C96A;--gold2:#FFE083;--deep:#0B0D14;--dark:#111520;
+  --card:#161B2C;--card2:#1C2336;--border:rgba(255,255,255,0.1);
+  --text:#F0F2FA;--muted:#7080A0;--green:#00E676;--red:#FF4444;
   --blue:#4FC3F7;--uru:#75AADB;
+  --wc-red:#C8102E;--wc-blue:#003DA5;--wc-green:#009A44;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -25,7 +26,7 @@ body{background:var(--deep);color:var(--text);font-family:'Barlow',sans-serif;mi
 /* SPLASH */
 #splash{position:fixed;inset:0;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .5s;}
 #splash.out{opacity:0;pointer-events:none;}
-.splash-ball{width:70px;height:70px;border-radius:50%;background:conic-gradient(#fff 0deg 60deg,#111 60deg 120deg,#fff 120deg 180deg,#111 180deg 240deg,#fff 240deg 300deg,#111 300deg 360deg);animation:spin 1s linear infinite;box-shadow:0 0 40px rgba(201,168,76,.4);margin-bottom:24px;}
+.splash-ball{width:70px;height:70px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 8%,transparent 50%),conic-gradient(#fff 0deg 55deg,#111 55deg 115deg,#fff 115deg 175deg,#111 175deg 235deg,#fff 235deg 295deg,#111 295deg 360deg);animation:spin 1s linear infinite;box-shadow:0 0 40px rgba(200,16,46,.5);margin-bottom:24px;}
 .splash-title{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold2);letter-spacing:4px;}
 .splash-sub{font-size:12px;color:var(--muted);letter-spacing:2px;margin-top:6px;}
 @keyframes spin{to{transform:rotate(360deg);}}
@@ -33,19 +34,19 @@ body{background:var(--deep);color:var(--text);font-family:'Barlow',sans-serif;mi
 /* LOGIN */
 #loginScreen{display:none;min-height:100vh;position:relative;overflow:hidden;}
 #loginScreen.show{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
-.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(201,168,76,.12),transparent 70%);pointer-events:none;}
+.login-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(200,16,46,.15),transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(0,61,165,.1),transparent 60%);pointer-events:none;}
 .login-ball{font-size:64px;margin-bottom:12px;animation:bounce .8s ease infinite alternate;}
 @keyframes bounce{to{transform:translateY(-8px);}}
 .login-title{font-family:'Bebas Neue',sans-serif;font-size:42px;color:#fff;letter-spacing:3px;text-align:center;}
-.login-title span{color:var(--gold2);}
+.login-title span{color:var(--wc-red);text-shadow:0 0 30px rgba(200,16,46,.4);}
 .login-sub{font-size:13px;color:var(--muted);letter-spacing:2px;text-align:center;margin-bottom:32px;}
-.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;width:100%;max-width:380px;}
+.login-card{background:var(--card);border:1px solid rgba(200,16,46,.3);border-radius:16px;padding:28px;width:100%;max-width:380px;box-shadow:0 0 40px rgba(200,16,46,.08);}
 .login-label{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:3px;color:var(--gold);text-transform:uppercase;margin-bottom:8px;display:block;}
 .login-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;outline:none;transition:border-color .2s;margin-bottom:16px;}
 .login-input:focus{border-color:var(--gold);}
 .login-input::placeholder{color:var(--muted);font-weight:400;}
-.btn-primary{width:100%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0A0E1A;border:none;border-radius:8px;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
-.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(201,168,76,.35);}
+.btn-primary{width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,16,46,.4);}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
 .users-list{margin-top:20px;}
 .users-title{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
@@ -57,25 +58,25 @@ body{background:var(--deep);color:var(--text);font-family:'Barlow',sans-serif;mi
 #app.show{display:block;}
 
 /* HEADER */
-header{background:var(--dark);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;padding-top:env(safe-area-inset-top);}
+header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:2px solid var(--wc-red);position:sticky;top:0;z-index:100;padding-top:env(safe-area-inset-top);}
 .header-inner{max-width:640px;margin:0 auto;padding:10px 14px;display:flex;align-items:center;gap:10px;}
 .header-logo{font-size:24px;}
 .header-text{flex:1;}
 .header-name{font-family:'Bebas Neue',sans-serif;font-size:18px;color:#fff;letter-spacing:2px;line-height:1;}
-.header-user{font-size:11px;color:var(--gold);letter-spacing:1px;}
+.header-user{font-size:11px;color:#7AB0FF;letter-spacing:1px;}
 .header-pts{text-align:right;}
-.pts-num{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold2);line-height:1;}
+.pts-num{font-family:'Bebas Neue',sans-serif;font-size:24px;color:#fff;line-height:1;}
 .pts-label{font-size:9px;color:var(--muted);letter-spacing:2px;}
 .logout-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);padding:5px 9px;font-size:11px;cursor:pointer;letter-spacing:1px;font-family:'Barlow Condensed',sans-serif;font-weight:600;}
 .logout-btn:hover{border-color:var(--red);color:var(--red);}
 
 /* NAV */
-.nav-bar{background:var(--deep);border-bottom:1px solid var(--border);position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:99;}
+.nav-bar{background:#0D1020;border-bottom:1px solid rgba(0,61,165,0.4);position:sticky;top:calc(52px + env(safe-area-inset-top));z-index:99;}
 .nav-inner{max-width:640px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none;padding:0 6px;}
 .nav-inner::-webkit-scrollbar{display:none;}
 .nav-tab{padding:11px 14px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);cursor:pointer;border:none;border-bottom:2px solid transparent;background:none;white-space:nowrap;transition:all .2s;}
 .nav-tab:hover{color:var(--gold);}
-.nav-tab.active{color:var(--gold2);border-bottom-color:var(--gold2);}
+.nav-tab.active{color:#fff;border-bottom-color:var(--wc-red);}
 
 /* MAIN */
 .main{max-width:640px;margin:0 auto;padding:16px 12px;padding-bottom:calc(24px + env(safe-area-inset-bottom));}
@@ -88,7 +89,7 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
 
 /* RANKING */
 .rank-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px;transition:transform .2s;}
-.rank-card.me{border-color:rgba(201,168,76,.45);background:linear-gradient(90deg,rgba(201,168,76,.07),var(--card));}
+.rank-card.me{border-color:rgba(200,16,46,.5);background:linear-gradient(90deg,rgba(200,16,46,.08),var(--card));}
 .rank-inner{display:flex;align-items:center;gap:10px;padding:12px 14px;}
 .rank-pos{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--muted);min-width:32px;text-align:center;}
 .rank-pos.p1{color:#FFD700;} .rank-pos.p2{color:#C0C0C0;} .rank-pos.p3{color:#CD7F32;}
@@ -104,9 +105,9 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
 
 /* MATCH BET CARD */
 .mbc{background:var(--card);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden;}
-.mbc.uru-match{border-left:3px solid var(--uru);}
+.mbc.uru-match{border-left:3px solid var(--wc-blue);}
 .mbc-head{display:flex;justify-content:space-between;align-items:center;padding:7px 12px;background:rgba(255,255,255,.02);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:4px;}
-.grp-tag{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);background:rgba(201,168,76,.1);padding:2px 6px;border-radius:3px;}
+.grp-tag{font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:#ff6b6b;background:rgba(200,16,46,.12);padding:2px 6px;border-radius:3px;}
 .time-tag{font-size:10px;color:var(--muted);}
 .st-up{background:rgba(79,195,247,.1);color:var(--blue);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:1px;}
 .st-live{background:rgba(0,230,118,.1);color:var(--green);font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;letter-spacing:1px;animation:blink 2s infinite;}
@@ -127,8 +128,8 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
 .si:focus{border-color:var(--gold);}
 .si:disabled{opacity:.35;cursor:not-allowed;}
 .sd{font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted);}
-.save-btn{margin-top:9px;width:100%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:7px;padding:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
-.save-btn:hover{background:rgba(201,168,76,.2);}
+.save-btn{margin-top:9px;width:100%;background:rgba(0,61,165,.15);border:1px solid rgba(0,61,165,.4);color:#7AB0FF;border-radius:7px;padding:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;cursor:pointer;transition:all .2s;}
+.save-btn:hover{background:rgba(0,61,165,.25);}
 .save-btn:disabled{opacity:.4;cursor:not-allowed;}
 .saved-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.2);color:var(--green);font-size:11px;letter-spacing:1px;padding:3px 9px;border-radius:4px;font-weight:600;margin-top:7px;}
 .pts-earned{display:inline-flex;align-items:center;gap:4px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold2);font-size:11px;padding:3px 9px;border-radius:4px;font-weight:700;margin-top:5px;}
@@ -156,7 +157,7 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
 /* GROUPS TABLE */
 .groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;}
 .grp-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;}
-.grp-hdr{background:linear-gradient(90deg,rgba(201,168,76,.14),rgba(201,168,76,.04));padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
+.grp-hdr{background:linear-gradient(90deg,rgba(0,61,165,.2),rgba(0,61,165,.04));padding:9px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);}
 .grp-letter{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--gold2);line-height:1;}
 .grp-teams-lbl{font-size:10px;color:var(--muted);letter-spacing:.5px;}
 .grp-tbl{width:100%;border-collapse:collapse;}
@@ -195,7 +196,7 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
 .fbtn.active{background:rgba(201,168,76,.1);border-color:var(--gold);color:var(--gold2);}
 
 /* REFRESH BTN */
-.refresh-btn{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.25);color:var(--gold2);padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .2s;}
+.refresh-btn{background:rgba(0,61,165,.1);border:1px solid rgba(0,61,165,.3);color:#7AB0FF;padding:6px 13px;border-radius:6px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:2px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .2s;}
 .refresh-btn:hover{background:rgba(201,168,76,.15);}
 .spin{animation:spin .8s linear infinite;}
 
@@ -270,7 +271,10 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
     <section class="section active" id="section-ranking">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
         <div class="sec-title" style="margin:0;flex:1">RANKING</div>
-        <button class="refresh-btn" id="refreshBtn" onclick="aiRefresh()"><span id="refreshIcon">↻</span> IA</button>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+          <button class="refresh-btn" id="notifBtn" onclick="setupNotifications()" style="font-size:11px;">🔔 Activar Alertas</button>
+          <button class="refresh-btn" id="refreshBtn" onclick="aiRefresh()"><span id="refreshIcon">↻</span> IA</button>
+        </div>
       </div>
       <div id="rankingList"></div>
     </section>
@@ -312,9 +316,25 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
       <div class="sec-title">APUESTAS DE TODOS</div>
       <div class="filter-bar" id="verFilterBar"></div>
       <div id="allBetsView"></div>
+    </section>
 
     <section class="section" id="section-reglas">
       <div class="sec-title">REGLAS Y PUNTAJES</div>
+
+      <div style="background:linear-gradient(135deg,rgba(0,61,165,.12),rgba(0,61,165,.04));border:1px solid rgba(0,61,165,.3);border-radius:12px;padding:18px;margin-bottom:12px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:#7AB0FF;letter-spacing:2px;margin-bottom:12px">🔔 NOTIFICACIONES</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">Activá las alertas para recibir notificaciones automáticas antes de cada partido.</div>
+        <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);">
+            <span style="font-size:16px">⏰</span> <span><b style="color:#7AB0FF">2 horas antes</b> — recordatorio para apostar</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);">
+            <span style="font-size:16px">🚨</span> <span><b style="color:#ff6b6b">30 minutos antes</b> — último aviso si aún no apostaste</span>
+          </div>
+        </div>
+        <button onclick="setupNotifications()" style="width:100%;background:rgba(0,61,165,.2);border:1px solid rgba(0,61,165,.4);color:#7AB0FF;border-radius:8px;padding:11px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;cursor:pointer;">🔔 ACTIVAR NOTIFICACIONES</button>
+        <div style="font-size:10px;color:var(--muted);margin-top:8px;text-align:center">Funciona mejor en Android. En iPhone necesitás tener la app instalada en la pantalla de inicio.</div>
+      </div>
 
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;">
         <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--gold2);letter-spacing:2px;margin-bottom:12px">⚽ PUNTOS POR PARTIDO</div>
@@ -1070,6 +1090,92 @@ function setupPWA(){
       document.body.appendChild(t);
       setTimeout(()=>{t.style.transition='opacity .5s';t.style.opacity='0';setTimeout(()=>t.remove(),600);},9000);
     },3000);
+  }
+}
+
+
+// ═══════════════ NOTIFICACIONES ═══════════════
+async function requestNotifPermission() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') return false;
+  const result = await Notification.requestPermission();
+  return result === 'granted';
+}
+
+function scheduleNotifications() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  // Clear existing scheduled
+  const existing = JSON.parse(localStorage.getItem('pencaNotifTimers') || '[]');
+  existing.forEach(t => clearTimeout(t));
+
+  const now = Date.now();
+  const scheduled = [];
+
+  MATCHES.forEach(m => {
+    const matchTime = new Date(m.dt).getTime();
+    const bets = allBets[currentUser] || {};
+    const hasBet = bets[m.id] && bets[m.id].h !== undefined;
+
+    // 2 hours before
+    const twoHoursBefore = matchTime - 2 * 3600 * 1000;
+    // 30 min before
+    const thirtyMinBefore = matchTime - 30 * 60 * 1000;
+
+    if (twoHoursBefore > now) {
+      const delay = twoHoursBefore - now;
+      const t = setTimeout(() => {
+        const b = (allBets[currentUser] || {})[m.id];
+        const msg = b && b.h !== undefined
+          ? `Ya apostaste ${b.h}-${b.a}. ¡Faltan 2hs!`
+          : `¡Faltan 2 horas! No olvides apostar.`;
+        new Notification(`⚽ ${m.h} vs ${m.a}`, {
+          body: msg,
+          icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
+          badge: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
+          tag: `match-2h-${m.id}`,
+          vibrate: [200, 100, 200]
+        });
+      }, delay);
+      scheduled.push(t);
+    }
+
+    if (thirtyMinBefore > now) {
+      const delay = thirtyMinBefore - now;
+      const t = setTimeout(() => {
+        const b = (allBets[currentUser] || {})[m.id];
+        if (!b || b.h === undefined) {
+          new Notification(`🚨 ¡ÚLTIMO AVISO! ${m.h} vs ${m.a}`, {
+            body: `Faltan 30 minutos y todavía no apostaste. ¡Entrá ya!`,
+            icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
+            tag: `match-30m-${m.id}`,
+            vibrate: [300, 100, 300, 100, 300]
+          });
+        }
+      }, delay);
+      scheduled.push(t);
+    }
+  });
+
+  localStorage.setItem('pencaNotifTimers', JSON.stringify(scheduled));
+  console.log(`✅ ${scheduled.length} notificaciones programadas`);
+}
+
+async function setupNotifications() {
+  if (!('Notification' in window)) {
+    showToast('Tu navegador no soporta notificaciones', 'err');
+    return;
+  }
+  const granted = await requestNotifPermission();
+  if (granted) {
+    scheduleNotifications();
+    showToast('🔔 Notificaciones activadas', 'ok');
+    document.getElementById('notifBtn').textContent = '🔔 Notificaciones ON';
+    document.getElementById('notifBtn').style.borderColor = 'rgba(0,230,118,.4)';
+    document.getElementById('notifBtn').style.color = 'var(--green)';
+    localStorage.setItem('pencaNotifEnabled', '1');
+  } else {
+    showToast('Permiso de notificaciones denegado', 'err');
   }
 }
 
