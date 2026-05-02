@@ -311,6 +311,118 @@ header{background:var(--dark);border-bottom:1px solid var(--border);position:sti
       <div class="sec-title">APUESTAS DE TODOS</div>
       <div class="filter-bar" id="verFilterBar"></div>
       <div id="allBetsView"></div>
+
+    <section class="section" id="section-reglas">
+      <div class="sec-title">REGLAS Y PUNTAJES</div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--gold2);letter-spacing:2px;margin-bottom:12px">⚽ PUNTOS POR PARTIDO</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">🎯</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Resultado exacto</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Ej: apostás 2-1 y sale 2-1</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green)">5 pts</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(79,195,247,.07);border:1px solid rgba(79,195,247,.2);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">✅</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Resultado correcto</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Acertás ganador/empate, score diferente</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--blue)">3 pts</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--gold2);letter-spacing:2px;margin-bottom:12px">🏆 PUNTOS ESPECIALES</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">🥇</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Campeon acertado</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">El equipo que gana el Mundial</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--gold2)">12 pts</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(192,192,192,.06);border:1px solid rgba(192,192,192,.15);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">🥈</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Subcampeon acertado</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">El equipo que llega a la final y pierde</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#C0C0C0">7 pts</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(205,127,50,.06);border:1px solid rgba(205,127,50,.15);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">🥉</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Tercer puesto acertado</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Gana el partido por el 3er lugar</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#CD7F32">5 pts</div>
+          </div>
+
+        </div>
+      </div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:12px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--gold2);letter-spacing:2px;margin-bottom:12px">🔒 REGLAS</div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:18px;flex-shrink:0;margin-top:1px">⏰</div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff">Cierre automatico</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Las apuestas se bloquean al inicio de cada partido. No se pueden cambiar despues.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:18px;flex-shrink:0;margin-top:1px">👁</div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff">Apuestas ocultas</div><div style="font-size:11px;color:var(--muted);margin-top:2px">No ves las apuestas de los demas hasta que empieza el partido. Sin trampa.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:18px;flex-shrink:0;margin-top:1px">🏆</div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff">Apuesta al campeon</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Se puede cambiar hasta el 11 de junio (inicio del torneo).</div></div>
+          </div>
+          <div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="font-size:18px;flex-shrink:0;margin-top:1px">🤖</div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff">Resultados con IA</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Se actualizan automaticamente cada 3 minutos durante el torneo.</div></div>
+          </div>
+          <div style="display:flex;gap:10px;padding:10px 0;">
+            <div style="font-size:18px;flex-shrink:0;margin-top:1px">☁️</div>
+            <div><div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;color:#fff">Guardado en la nube</div><div style="font-size:11px;color:var(--muted);margin-top:2px">Entra desde cualquier dispositivo con tu nombre y tus apuestas estaran ahi.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,rgba(117,170,219,.1),rgba(117,170,219,.04));border:1px solid rgba(117,170,219,.25);border-radius:12px;padding:18px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--uru);letter-spacing:2px;margin-bottom:10px">&#127482;&#127486; PARTIDOS DE URUGUAY</div>
+        <div style="display:flex;flex-direction:column;gap:0;">
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(117,170,219,.15);">
+            <img src="https://flagcdn.com/w40/sa.png" style="width:26px;height:19px;border-radius:2px;flex-shrink:0">
+            <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;">Arabia Saudita vs Uruguay</div>
+            <div style="font-size:11px;color:var(--uru);white-space:nowrap">15 Jun 7:00 PM</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(117,170,219,.15);">
+            <img src="https://flagcdn.com/w40/uy.png" style="width:26px;height:19px;border-radius:2px;flex-shrink:0">
+            <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;">Uruguay vs Cabo Verde</div>
+            <div style="font-size:11px;color:var(--uru);white-space:nowrap">21 Jun 7:00 PM</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;padding:9px 0;">
+            <img src="https://flagcdn.com/w40/uy.png" style="width:26px;height:19px;border-radius:2px;flex-shrink:0">
+            <div style="flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:13px;">Uruguay vs España</div>
+            <div style="font-size:11px;color:var(--uru);white-space:nowrap">26 Jun 9:00 PM</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
     </section>
 
   </div>
