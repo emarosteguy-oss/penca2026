@@ -45,6 +45,8 @@ body{background:var(--deep);color:var(--text);font-family:'Barlow',sans-serif;mi
 .login-input{width:100%;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:600;letter-spacing:1px;outline:none;transition:border-color .2s;margin-bottom:16px;}
 .login-input:focus{border-color:var(--gold);}
 .login-input::placeholder{color:var(--muted);font-weight:400;}
+#loginError{animation:fadeIn .3s;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px);}to{opacity:1;transform:translateY(0);}}
 .btn-primary{width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:15px;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;cursor:pointer;transition:transform .15s,box-shadow .15s;}
 .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,16,46,.4);}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none;}
@@ -235,6 +237,9 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
   <div class="login-card">
     <label class="login-label">Tu nombre</label>
     <input class="login-input" id="usernameInput" type="text" placeholder="Ej: Esteban, Juan..." maxlength="20" autocomplete="off">
+    <label class="login-label">Tu PIN (4 dígitos)</label>
+    <input class="login-input" id="passwordInput" type="number" placeholder="4 dígitos (ej: 1234)" maxlength="4" min="0" max="9999" autocomplete="off" inputmode="numeric" pattern="[0-9]*" onkeydown="if(event.key==='Enter')doLogin()" oninput="if(this.value.length>4)this.value=this.value.slice(0,4)" style="-moz-appearance:textfield">
+    <div id="loginError" style="color:#ff6b6b;font-size:12px;margin-bottom:10px;display:none;text-align:center;letter-spacing:.5px"></div>
     <button class="btn-primary" id="loginBtn" onclick="doLogin()">⚽ ENTRAR A LA PENCA</button>
     <div class="users-list" id="usersList"></div>
   </div>
@@ -1044,29 +1049,85 @@ function showToast(msg,type){
 // ═══════════════ LOGIN / LOGOUT ═══════════════
 function renderUserChips(){
   const el=document.getElementById('usersList');
-  if(!registeredUsers.length){el.innerHTML='';return;}
-  el.innerHTML=`<div class="users-title">Jugadores registrados (${registeredUsers.length})</div>`+
-    registeredUsers.map(u=>`<span class="user-chip" onclick="quickLogin('${u}')" style="border-color:${ac(u)}40">${al(u)} ${u}</span>`).join('');
+  if(!registeredUsers.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="users-title" style="text-align:center;margin-top:4px">${registeredUsers.length} jugador${registeredUsers.length!==1?'es':''} registrado${registeredUsers.length!==1?'s':''}</div>`;
 }
-function quickLogin(name){document.getElementById('usernameInput').value=name;doLogin();}
+function quickLogin(name){ document.getElementById('usernameInput').value=name; }
+
+async function simpleHash(str) {
+  // Simple hash for password storage
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36);
+}
 
 async function doLogin(){
-  const name=document.getElementById('usernameInput').value.trim();
-  if(!name){showToast('Ingresá tu nombre','err');return;}
-  const btn=document.getElementById('loginBtn');
-  btn.disabled=true;btn.textContent='CONECTANDO...';
-  currentUser=name;
-  if(!registeredUsers.includes(name)){registeredUsers.push(name);await fbSaveUsers();}
-  if(!allBets[name]){allBets[name]={};await fbSaveBets(name);}
-  localStorage.setItem('pencaUser',name);
-  document.getElementById('loginScreen').classList.remove('show');
-  document.getElementById('app').classList.add('show');
-  renderAll();
-  aiRefresh();
-  setInterval(aiRefresh,3*60*1000);
+  const name = document.getElementById('usernameInput').value.trim();
+  const pass = document.getElementById('passwordInput').value.trim();
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+
+  if(!name){ showToast('Ingresá tu nombre','err'); return; }
+  if(!pass || pass.length < 4){ showToast('El PIN debe tener 4 dígitos','err'); return; }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true; btn.textContent = 'VERIFICANDO PIN...';
+
+  try {
+    const hashedPass = await simpleHash(name.toLowerCase() + pass);
+    const db = window._db, doc = window._fbDoc, getDoc = window._fbGetDoc, setDoc = window._fbSetDoc;
+
+    // Load passwords doc
+    const passSnap = await getDoc(doc(db, 'penca', 'passwords'));
+    const passwords = passSnap.exists() ? passSnap.data() : {};
+
+    if (registeredUsers.includes(name)) {
+      // Existing user - verify password
+      if (passwords[name] && passwords[name] !== hashedPass) {
+        errEl.textContent = '❌ PIN incorrecto';
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = '⚽ ENTRAR A LA PENCA';
+        return;
+      }
+      // First time with password system - save it
+      if (!passwords[name]) {
+        passwords[name] = hashedPass;
+        await setDoc(doc(db, 'penca', 'passwords'), passwords);
+      }
+    } else {
+      // New user - register with password
+      passwords[name] = hashedPass;
+      await setDoc(doc(db, 'penca', 'passwords'), passwords);
+      registeredUsers.push(name);
+      await fbSaveUsers();
+    }
+
+    currentUser = name;
+    if(!allBets[name]){ allBets[name] = {}; await fbSaveBets(name); }
+    localStorage.setItem('pencaUser', name);
+    localStorage.setItem('pencaPass', hashedPass);
+
+    document.getElementById('loginScreen').classList.remove('show');
+    document.getElementById('app').classList.add('show');
+    renderAll();
+    aiRefresh();
+    setInterval(aiRefresh, 3*60*1000);
+    if(localStorage.getItem('pencaNotifEnabled')==='1'){
+      requestNotifPermission().then(ok=>{ if(ok) scheduleNotifications(); });
+    }
+  } catch(e) {
+    console.error(e);
+    showToast('Error de conexión', 'err');
+    btn.disabled = false; btn.textContent = '⚽ ENTRAR A LA PENCA';
+  }
 }
 async function doLogout(){
   currentUser=null;localStorage.removeItem('pencaUser');
+  localStorage.removeItem('pencaPass');
   document.getElementById('app').classList.remove('show');
   document.getElementById('loginScreen').classList.add('show');
   renderUserChips();
