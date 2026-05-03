@@ -1117,7 +1117,7 @@ async function doLogin(){
     aiRefresh();
     setInterval(aiRefresh, 3*60*1000);
     if(localStorage.getItem('pencaNotifEnabled')==='1'){
-      requestNotifPermission().then(ok=>{ if(ok) scheduleNotifications(); });
+      requestNotifPermission().then(ok=>{ if(ok){ cleanOldNotifLog(); scheduleNotifications(); } });
     }
   } catch(e) {
     console.error(e);
@@ -1166,60 +1166,92 @@ async function requestNotifPermission() {
 
 function scheduleNotifications() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
-  // Clear existing scheduled
+
+  // Clear any existing timers
   const existing = JSON.parse(localStorage.getItem('pencaNotifTimers') || '[]');
   existing.forEach(t => clearTimeout(t));
 
   const now = Date.now();
-  const scheduled = [];
+  const timers = [];
+  // Track which notifications were already sent this session
+  const sent = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
 
   MATCHES.forEach(m => {
     const matchTime = new Date(m.dt).getTime();
-    const bets = allBets[currentUser] || {};
-    const hasBet = bets[m.id] && bets[m.id].h !== undefined;
+    // Skip matches already started
+    if (matchTime <= now) return;
 
-    // 2 hours before
     const twoHoursBefore = matchTime - 2 * 3600 * 1000;
-    // 30 min before
     const thirtyMinBefore = matchTime - 30 * 60 * 1000;
 
-    if (twoHoursBefore > now) {
+    // 2 hours before — only if not already sent today
+    const key2h = `2h_${m.id}`;
+    if (twoHoursBefore > now && !sent[key2h]) {
       const delay = twoHoursBefore - now;
       const t = setTimeout(() => {
+        // Check at fire time if user already bet
         const b = (allBets[currentUser] || {})[m.id];
-        const msg = b && b.h !== undefined
-          ? `Ya apostaste ${b.h}-${b.a}. ¡Faltan 2hs!`
-          : `¡Faltan 2 horas! No olvides apostar.`;
+        const msg = (b && b.h !== undefined)
+          ? `Ya apostaste ${b.h}-${b.a} ✅ ¡Faltan 2 horas!`
+          : `⚠️ ¡Faltan 2 horas! Todavía no apostaste.`;
         new Notification(`⚽ ${m.h} vs ${m.a}`, {
           body: msg,
           icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
-          badge: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
-          tag: `match-2h-${m.id}`,
-          vibrate: [200, 100, 200]
+          tag: key2h,
+          requireInteraction: false
         });
+        // Mark as sent so it doesn't repeat
+        const s = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
+        s[key2h] = true;
+        localStorage.setItem('pencaNotifSent', JSON.stringify(s));
       }, delay);
-      scheduled.push(t);
+      timers.push(t);
     }
 
-    if (thirtyMinBefore > now) {
+    // 30 min before — only if user hasn't bet yet AND not already sent
+    const key30m = `30m_${m.id}`;
+    if (thirtyMinBefore > now && !sent[key30m]) {
       const delay = thirtyMinBefore - now;
       const t = setTimeout(() => {
         const b = (allBets[currentUser] || {})[m.id];
+        // Only notify if no bet placed
         if (!b || b.h === undefined) {
           new Notification(`🚨 ¡ÚLTIMO AVISO! ${m.h} vs ${m.a}`, {
-            body: `Faltan 30 minutos y todavía no apostaste. ¡Entrá ya!`,
+            body: `Faltan 30 minutos y NO apostaste. ¡Entrá ya antes que se cierre!`,
             icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
-            tag: `match-30m-${m.id}`,
+            tag: key30m,
+            requireInteraction: true,
             vibrate: [300, 100, 300, 100, 300]
           });
         }
+        const s = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
+        s[key30m] = true;
+        localStorage.setItem('pencaNotifSent', JSON.stringify(s));
       }, delay);
-      scheduled.push(t);
+      timers.push(t);
     }
   });
 
-  localStorage.setItem('pencaNotifTimers', JSON.stringify(scheduled));
-  console.log(`✅ ${scheduled.length} notificaciones programadas`);
+  // Store timer IDs (to clear if needed)
+  localStorage.setItem('pencaNotifTimers', JSON.stringify(timers));
+  console.log(`✅ ${timers.length} notificaciones programadas para partidos futuros`);
+}
+
+// Clean up sent-log for past matches (run on startup)
+function cleanOldNotifLog() {
+  const sent = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
+  const now = Date.now();
+  let changed = false;
+  MATCHES.forEach(m => {
+    const matchTime = new Date(m.dt).getTime();
+    // Remove logs for matches that started more than 2h ago
+    if (matchTime < now - 2 * 3600 * 1000) {
+      delete sent[`2h_${m.id}`];
+      delete sent[`30m_${m.id}`];
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('pencaNotifSent', JSON.stringify(sent));
 }
 
 async function setupNotifications() {
@@ -1229,14 +1261,14 @@ async function setupNotifications() {
   }
   const granted = await requestNotifPermission();
   if (granted) {
+    cleanOldNotifLog();
     scheduleNotifications();
     showToast('🔔 Notificaciones activadas', 'ok');
-    document.getElementById('notifBtn').textContent = '🔔 Notificaciones ON';
-    document.getElementById('notifBtn').style.borderColor = 'rgba(0,230,118,.4)';
-    document.getElementById('notifBtn').style.color = 'var(--green)';
+    const btn = document.getElementById('notifBtn');
+    if(btn){ btn.textContent='🔔 Alertas ON'; btn.style.borderColor='rgba(0,230,118,.4)'; btn.style.color='var(--green)'; }
     localStorage.setItem('pencaNotifEnabled', '1');
   } else {
-    showToast('Permiso de notificaciones denegado', 'err');
+    showToast('Permiso denegado — activalo en ajustes del celu', 'err');
   }
 }
 
