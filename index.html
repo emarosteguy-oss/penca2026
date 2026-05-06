@@ -269,6 +269,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
       <button class="nav-tab" onclick="showSection('bracket',this)">🗺 Cuadro</button>
       <button class="nav-tab" onclick="showSection('ver',this)">👁 Ver Todos</button>
       <button class="nav-tab" onclick="showSection('reglas',this)">📋 Reglas</button>
+      <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
     </div>
   </nav>
   <div class="main">
@@ -449,6 +450,15 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
 
     </section>
 
+
+    <section class="section" id="section-admin">
+      <div class="sec-title">PANEL ADMIN</div>
+      <div style="background:rgba(200,16,46,.06);border:1px solid rgba(200,16,46,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--muted)">
+        🔒 Solo visible para el administrador. Podés borrar usuarios duplicados o con errores.
+      </div>
+      <div class="sec-title" style="font-size:16px">JUGADORES REGISTRADOS</div>
+      <div id="adminUsersList"></div>
+    </section>
     </section>
 
   </div>
@@ -459,7 +469,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, collection, getDocs, onSnapshot, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, getDocs, onSnapshot, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -482,6 +492,7 @@ window._fbCollection = collection;
 window._fbGetDocs = getDocs;
 window._fbOnSnapshot = onSnapshot;
 window._fbServerTimestamp = serverTimestamp;
+window._fbDeleteDoc = deleteDoc;
 window._fbReady = true;
 
 // Notify app
@@ -1164,91 +1175,86 @@ async function requestNotifPermission() {
   return result === 'granted';
 }
 
+// Check every minute if a notification should fire
+let notifCheckInterval = null;
+
 function scheduleNotifications() {
   if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  // Clear existing interval if any
+  if (notifCheckInterval) clearInterval(notifCheckInterval);
+  // Run check immediately and then every 60 seconds
+  checkAndFireNotifications();
+  notifCheckInterval = setInterval(checkAndFireNotifications, 60 * 1000);
+  console.log('🔔 Sistema de notificaciones activo (revisión cada 60s)');
+}
 
-  // Clear any existing timers
-  const existing = JSON.parse(localStorage.getItem('pencaNotifTimers') || '[]');
-  existing.forEach(t => clearTimeout(t));
-
+function checkAndFireNotifications() {
+  if (!currentUser) return;
   const now = Date.now();
-  const timers = [];
-  // Track which notifications were already sent this session
   const sent = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
+  let changed = false;
 
   MATCHES.forEach(m => {
     const matchTime = new Date(m.dt).getTime();
-    // Skip matches already started
-    if (matchTime <= now) return;
+    if (matchTime <= now) return; // partido ya empezó
 
     const twoHoursBefore = matchTime - 2 * 3600 * 1000;
     const thirtyMinBefore = matchTime - 30 * 60 * 1000;
+    const fiveMinWindow = 5 * 60 * 1000; // 5 min tolerance window
 
-    // 2 hours before — only if not already sent today
+    // 2h before: fire if we're within 5 min of the 2h mark
     const key2h = `2h_${m.id}`;
-    if (twoHoursBefore > now && !sent[key2h]) {
-      const delay = twoHoursBefore - now;
-      const t = setTimeout(() => {
-        // Check at fire time if user already bet
-        const b = (allBets[currentUser] || {})[m.id];
-        const msg = (b && b.h !== undefined)
-          ? `Ya apostaste ${b.h}-${b.a} ✅ ¡Faltan 2 horas!`
-          : `⚠️ ¡Faltan 2 horas! Todavía no apostaste.`;
-        new Notification(`⚽ ${m.h} vs ${m.a}`, {
-          body: msg,
-          icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
-          tag: key2h,
-          requireInteraction: false
-        });
-        // Mark as sent so it doesn't repeat
-        const s = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
-        s[key2h] = true;
-        localStorage.setItem('pencaNotifSent', JSON.stringify(s));
-      }, delay);
-      timers.push(t);
+    if (!sent[key2h] && now >= twoHoursBefore && now < twoHoursBefore + fiveMinWindow) {
+      const b = (allBets[currentUser] || {})[m.id];
+      const msg = (b && b.h !== undefined)
+        ? `Ya apostaste ${b.h}-${b.a} ✅`
+        : `⚠️ ¡Todavía no apostaste! Cerramos en 2 horas.`;
+      new Notification(`⚽ ${m.h} vs ${m.a} — en 2 horas`, {
+        body: msg,
+        icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
+        tag: key2h
+      });
+      sent[key2h] = true;
+      changed = true;
     }
 
-    // 30 min before — only if user hasn't bet yet AND not already sent
+    // 30 min before: only if no bet yet
     const key30m = `30m_${m.id}`;
-    if (thirtyMinBefore > now && !sent[key30m]) {
-      const delay = thirtyMinBefore - now;
-      const t = setTimeout(() => {
-        const b = (allBets[currentUser] || {})[m.id];
-        // Only notify if no bet placed
-        if (!b || b.h === undefined) {
-          new Notification(`🚨 ¡ÚLTIMO AVISO! ${m.h} vs ${m.a}`, {
-            body: `Faltan 30 minutos y NO apostaste. ¡Entrá ya antes que se cierre!`,
-            icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
-            tag: key30m,
-            requireInteraction: true,
-            vibrate: [300, 100, 300, 100, 300]
-          });
-        }
-        const s = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
-        s[key30m] = true;
-        localStorage.setItem('pencaNotifSent', JSON.stringify(s));
-      }, delay);
-      timers.push(t);
+    if (!sent[key30m] && now >= thirtyMinBefore && now < thirtyMinBefore + fiveMinWindow) {
+      const b = (allBets[currentUser] || {})[m.id];
+      if (!b || b.h === undefined) {
+        new Notification(`🚨 ${m.h} vs ${m.a} — ¡30 MINUTOS!`, {
+          body: `¡ÚLTIMO AVISO! No apostaste y el partido cierra en 30 min.`,
+          icon: 'https://football-logos.cc/tournaments/fifa-world-cup-2026/logo.png',
+          tag: key30m,
+          requireInteraction: true
+        });
+      }
+      sent[key30m] = true;
+      changed = true;
     }
   });
 
-  // Store timer IDs (to clear if needed)
-  localStorage.setItem('pencaNotifTimers', JSON.stringify(timers));
-  console.log(`✅ ${timers.length} notificaciones programadas para partidos futuros`);
+  // Clean old sent logs (matches started more than 3h ago)
+  MATCHES.forEach(m => {
+    const matchTime = new Date(m.dt).getTime();
+    if (matchTime < now - 3 * 3600 * 1000) {
+      delete sent[`2h_${m.id}`];
+      delete sent[`30m_${m.id}`];
+      changed = true;
+    }
+  });
+
+  if (changed) localStorage.setItem('pencaNotifSent', JSON.stringify(sent));
 }
 
-// Clean up sent-log for past matches (run on startup)
 function cleanOldNotifLog() {
   const sent = JSON.parse(localStorage.getItem('pencaNotifSent') || '{}');
   const now = Date.now();
   let changed = false;
   MATCHES.forEach(m => {
-    const matchTime = new Date(m.dt).getTime();
-    // Remove logs for matches that started more than 2h ago
-    if (matchTime < now - 2 * 3600 * 1000) {
-      delete sent[`2h_${m.id}`];
-      delete sent[`30m_${m.id}`];
-      changed = true;
+    if (new Date(m.dt).getTime() < now - 3 * 3600 * 1000) {
+      delete sent[`2h_${m.id}`]; delete sent[`30m_${m.id}`]; changed = true;
     }
   });
   if (changed) localStorage.setItem('pencaNotifSent', JSON.stringify(sent));
@@ -1269,6 +1275,76 @@ async function setupNotifications() {
     localStorage.setItem('pencaNotifEnabled', '1');
   } else {
     showToast('Permiso denegado — activalo en ajustes del celu', 'err');
+  }
+}
+
+
+// ═══════════════ ADMIN ═══════════════
+const ADMIN_PIN = '1891';
+const ADMIN_USER = 'Boli';
+
+function checkAdminAccess() {
+  if (currentUser === ADMIN_USER) {
+    const tab = document.getElementById('adminTab');
+    if (tab) tab.style.display = 'block';
+  }
+}
+
+function renderAdmin() {
+  const el = document.getElementById('adminUsersList');
+  if (!el) return;
+  if (!registeredUsers.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS</div></div>';
+    return;
+  }
+  const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
+  el.innerHTML = scores.map(u => {
+    const betCount = Object.keys(allBets[u.name] || {}).filter(k => !isNaN(k)).length;
+    const isMe = u.name === currentUser;
+    return `<div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+      <div style="width:36px;height:36px;border-radius:50%;background:${ac(u.name)};display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:16px;flex-shrink:0">${al(u.name)}</div>
+      <div style="flex:1">
+        <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px">${u.name}${isMe?' <span style="color:var(--gold);font-size:10px">(vos)</span>':''}</div>
+        <div style="font-size:11px;color:var(--muted)">${betCount} apuestas · ${u.pts} pts</div>
+      </div>
+      ${!isMe ? `<button onclick="confirmDeleteUser('${u.name}')" style="background:rgba(200,16,46,.1);border:1px solid rgba(200,16,46,.3);color:#ff6b6b;border-radius:6px;padding:6px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:11px;letter-spacing:1px;cursor:pointer;">🗑 BORRAR</button>` : '<div style="font-size:11px;color:var(--muted);padding:0 8px">Admin</div>'}
+    </div>`;
+  }).join('');
+}
+
+function confirmDeleteUser(username) {
+  const confirmed = confirm(`¿Borrar a "${username}"?\n\nSe eliminarán todas sus apuestas. Esta acción no se puede deshacer.`);
+  if (confirmed) deleteUser(username);
+}
+
+async function deleteUser(username) {
+  try {
+    const db = window._db, doc = window._fbDoc, setDoc = window._fbSetDoc, deleteDoc = window._fbDeleteDoc;
+    // Remove from users list
+    registeredUsers = registeredUsers.filter(u => u !== username);
+    await fbSaveUsers();
+    // Delete bets
+    if (deleteDoc) {
+      try { await deleteDoc(doc(db, 'bets', username)); } catch(e) {}
+    } else {
+      // Fallback: overwrite with empty
+      await setDoc(doc(db, 'bets', username), {});
+    }
+    // Remove from local state
+    delete allBets[username];
+    // Remove password
+    const passSnap = await window._fbGetDoc(doc(db, 'penca', 'passwords'));
+    if (passSnap.exists()) {
+      const passwords = passSnap.data();
+      delete passwords[username];
+      await setDoc(doc(db, 'penca', 'passwords'), passwords);
+    }
+    showToast(`✅ ${username} eliminado`, 'ok');
+    renderAdmin();
+    renderRanking();
+  } catch(e) {
+    showToast('Error al borrar usuario', 'err');
+    console.error(e);
   }
 }
 
