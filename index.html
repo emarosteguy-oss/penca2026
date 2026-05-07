@@ -1127,6 +1127,7 @@ async function doLogin(){
     renderAll();
     aiRefresh();
     setInterval(aiRefresh, 3*60*1000);
+    checkAdminAccess();
     if(localStorage.getItem('pencaNotifEnabled')==='1'){
       requestNotifPermission().then(ok=>{ if(ok){ cleanOldNotifLog(); scheduleNotifications(); } });
     }
