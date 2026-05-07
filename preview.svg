@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#080C18"/>
+      <stop offset="50%" style="stop-color:#0E1525"/>
+      <stop offset="100%" style="stop-color:#080C18"/>
+    </linearGradient>
+    <linearGradient id="redLine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:transparent"/>
+      <stop offset="20%" style="stop-color:#C8102E"/>
+      <stop offset="80%" style="stop-color:#C8102E"/>
+      <stop offset="100%" style="stop-color:transparent"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8C96A"/>
+      <stop offset="100%" style="stop-color:#C9A84C"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" style="stop-color:#C8102E;stop-opacity:0.15"/>
+      <stop offset="100%" style="stop-color:transparent;stop-opacity:0"/>
+    </radialGradient>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#C8102E" flood-opacity="0.4"/>
+    </filter>
+    <filter id="glow-text">
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#E8C96A" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- Grid pattern -->
+  <g opacity="0.04" stroke="#fff" stroke-width="1">
+    <line x1="0" y1="105" x2="1200" y2="105"/>
+    <line x1="0" y1="210" x2="1200" y2="210"/>
+    <line x1="0" y1="315" x2="1200" y2="315"/>
+    <line x1="0" y1="420" x2="1200" y2="420"/>
+    <line x1="0" y1="525" x2="1200" y2="525"/>
+    <line x1="200" y1="0" x2="200" y2="630"/>
+    <line x1="400" y1="0" x2="400" y2="630"/>
+    <line x1="600" y1="0" x2="600" y2="630"/>
+    <line x1="800" y1="0" x2="800" y2="630"/>
+    <line x1="1000" y1="0" x2="1000" y2="630"/>
+  </g>
+
+  <!-- Top red accent line -->
+  <rect x="0" y="0" width="1200" height="5" fill="url(#redLine)"/>
+
+  <!-- Trophy SVG (center-left area) -->
+  <g transform="translate(160, 80)" filter="url(#shadow)">
+    <!-- Cup base -->
+    <rect x="55" y="340" width="90" height="20" rx="4" fill="url(#goldGrad)"/>
+    <rect x="35" y="355" width="130" height="16" rx="4" fill="url(#goldGrad)"/>
+    <!-- Stem -->
+    <rect x="85" y="295" width="30" height="50" fill="url(#goldGrad)"/>
+    <!-- Cup body -->
+    <path d="M20 60 Q15 180 85 240 Q100 250 100 265 Q100 250 115 240 Q185 180 180 60 Z" fill="url(#goldGrad)"/>
+    <!-- Cup shine -->
+    <path d="M45 80 Q42 160 80 210" stroke="rgba(255,255,255,0.3)" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <!-- Handles -->
+    <path d="M20 80 Q-20 100 -15 150 Q-10 190 20 195" stroke="url(#goldGrad)" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <path d="M180 80 Q220 100 215 150 Q210 190 180 195" stroke="url(#goldGrad)" stroke-width="18" fill="none" stroke-linecap="round"/>
+    <!-- Star on cup -->
+    <text x="100" y="175" text-anchor="middle" font-size="60" fill="rgba(255,255,255,0.2)">★</text>
+  </g>
+
+  <!-- Football (top right area) -->
+  <g transform="translate(950, 60)">
+    <circle cx="100" cy="100" r="85" fill="#1a1a2e" stroke="#333" stroke-width="2"/>
+    <!-- Pentagon pattern -->
+    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+    <polygon points="100,30 125,55 115,85 85,85 75,55" fill="#111" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <polygon points="155,75 170,105 150,125 125,115 125,85" fill="#111" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <polygon points="145,145 130,165 100,165 80,150 85,125 115,120" fill="#111" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <polygon points="55,145 45,115 65,95 85,105 85,125 70,145" fill="#111" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <polygon points="45,75 75,65 85,85 75,105 50,105" fill="#111" stroke="rgba(255,255,255,0.15)" stroke-width="1.5"/>
+    <circle cx="100" cy="100" r="85" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="2"/>
+  </g>
+
+  <!-- Main title -->
+  <text x="600" y="185" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="52" fill="white" filter="url(#glow-text)" letter-spacing="3">QUÉ LINDO QUE ES EL FÚTBOL</text>
+
+  <!-- Red divider -->
+  <rect x="300" y="205" width="600" height="4" rx="2" fill="#C8102E"/>
+
+  <!-- PENCA 2026 -->
+  <text x="600" y="290" text-anchor="middle" font-family="Arial Black, sans-serif" font-weight="900" font-size="88" fill="url(#goldGrad)" letter-spacing="6">PENCA 2026</text>
+
+  <!-- FIFA World Cup subtitle -->
+  <text x="600" y="340" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" fill="rgba(255,255,255,0.5)" letter-spacing="8">FIFA WORLD CUP · USA · MEX · CAN</text>
+
+  <!-- Bottom divider -->
+  <rect x="100" y="375" width="1000" height="1" fill="rgba(255,255,255,0.08)"/>
+
+  <!-- Features row -->
+  <g transform="translate(0, 400)">
+    <!-- Feature 1 -->
+    <g transform="translate(150, 0)">
+      <text x="0" y="35" text-anchor="middle" font-size="32">⚽</text>
+      <text x="0" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)">72 Partidos</text>
+    </g>
+    <!-- Feature 2 -->
+    <g transform="translate(350, 0)">
+      <text x="0" y="35" text-anchor="middle" font-size="32">🏆</text>
+      <text x="0" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)">Ranking en vivo</text>
+    </g>
+    <!-- Feature 3 -->
+    <g transform="translate(550, 0)">
+      <text x="0" y="35" text-anchor="middle" font-size="32">🔔</text>
+      <text x="0" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)">Notificaciones</text>
+    </g>
+    <!-- Feature 4 -->
+    <g transform="translate(750, 0)">
+      <text x="0" y="35" text-anchor="middle" font-size="32">🤖</text>
+      <text x="0" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)">Resultados IA</text>
+    </g>
+    <!-- Feature 5 -->
+    <g transform="translate(950, 0)">
+      <text x="0" y="35" text-anchor="middle" font-size="32">🇺🇾</text>
+      <text x="0" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" fill="rgba(255,255,255,0.7)">Horario UYT</text>
+    </g>
+  </g>
+
+  <!-- Bottom URL bar -->
+  <rect x="0" y="560" width="1200" height="70" fill="rgba(200,16,46,0.15)"/>
+  <rect x="0" y="560" width="1200" height="2" fill="#C8102E"/>
+  <text x="600" y="603" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="rgba(255,255,255,0.6)" letter-spacing="2">emarosteguy-oss.github.io/penca2026</text>
+
+  <!-- Bottom red accent -->
+  <rect x="0" y="625" width="1200" height="5" fill="url(#redLine)"/>
+</svg>
