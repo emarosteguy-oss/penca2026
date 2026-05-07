@@ -1362,6 +1362,7 @@ document.addEventListener('fbReady',async()=>{
       if(!registeredUsers.includes(saved)){registeredUsers.push(saved);fbSaveUsers();}
       document.getElementById('app').classList.add('show');
       renderAll();aiRefresh();setInterval(aiRefresh,3*60*1000);
+      checkAdminAccess();
     }else{
       document.getElementById('loginScreen').classList.add('show');
       renderUserChips();
