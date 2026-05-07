@@ -1042,6 +1042,14 @@ function showSection(name,btn){
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('section-'+name).classList.add('active');
   if(btn)btn.classList.add('active');
+  if(name==='ranking') renderRanking();
+  else if(name==='apuestas') renderMyBets();
+  else if(name==='campeones') renderChampions();
+  else if(name==='grupos') renderGroups();
+  else if(name==='bracket') renderBracket();
+  else if(name==='ver') renderVerBets();
+  else if(name==='reglas') {} 
+  else if(name==='admin') renderAdmin();
 }
 function filterBets(f,btn){
   betFilter=f;
