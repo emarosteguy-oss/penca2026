@@ -1299,11 +1299,22 @@ function checkAdminAccess() {
   }
 }
 
-function renderAdmin() {
+async function renderAdmin() {
   const el = document.getElementById('adminUsersList');
   if (!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Cargando...</div>';
+
+  // Reload fresh from Firebase every time
+  try {
+    const db=window._db, doc=window._fbDoc, getDoc=window._fbGetDoc, collection=window._fbCollection, getDocs=window._fbGetDocs;
+    const uSnap = await getDoc(doc(db,'penca','users'));
+    if(uSnap.exists()) registeredUsers = uSnap.data().list || [];
+    const bSnap = await getDocs(collection(db,'bets'));
+    bSnap.forEach(d=>{ allBets[d.id]=d.data(); });
+  } catch(e) { console.error('Admin load error:',e); }
+
   if (!registeredUsers.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS</div></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS AÚN</div></div>';
     return;
   }
   const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
