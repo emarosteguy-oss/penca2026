@@ -1302,19 +1302,35 @@ function checkAdminAccess() {
 async function renderAdmin() {
   const el = document.getElementById('adminUsersList');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Cargando...</div>';
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--muted)">Cargando usuarios...</div>';
 
-  // Reload fresh from Firebase every time
   try {
-    const db=window._db, doc=window._fbDoc, getDoc=window._fbGetDoc, collection=window._fbCollection, getDocs=window._fbGetDocs;
-    const uSnap = await getDoc(doc(db,'penca','users'));
-    if(uSnap.exists()) registeredUsers = uSnap.data().list || [];
+    const db=window._db, doc=window._fbDoc, getDoc=window._fbGetDoc,
+          collection=window._fbCollection, getDocs=window._fbGetDocs;
+
+    // Load bets collection — each document ID is a username
     const bSnap = await getDocs(collection(db,'bets'));
-    bSnap.forEach(d=>{ allBets[d.id]=d.data(); });
-  } catch(e) { console.error('Admin load error:',e); }
+    const usersFromBets = [];
+    bSnap.forEach(d => {
+      allBets[d.id] = d.data();
+      usersFromBets.push(d.id);
+    });
+
+    // Also load users list
+    const uSnap = await getDoc(doc(db,'penca','users'));
+    const usersFromList = uSnap.exists() ? (uSnap.data().list || []) : [];
+
+    // Merge both sources
+    const allUsernames = [...new Set([...usersFromList, ...usersFromBets])];
+    if (allUsernames.length > 0) registeredUsers = allUsernames;
+
+  } catch(e) {
+    el.innerHTML = '<div style="color:var(--red);padding:16px;font-size:13px">Error al cargar: ' + e.message + '</div>';
+    return;
+  }
 
   if (!registeredUsers.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS AÚN</div></div>';
+    el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS AÚN</div><div style="font-size:12px;margin-top:4px">Nadie se ha registrado todavía</div></div>';
     return;
   }
   const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
