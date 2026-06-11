@@ -1034,9 +1034,8 @@ Dame SOLO JSON válido sin markdown ni backticks:
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const data=await resp.json();
     let raw=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    raw=raw.replace(/```[a-z]*
-?/gi,'').trim();
-    const jm=raw.match(/\{[\s\S]*\}/);
+    raw=raw.replace(/```[a-z]*/gi,'').replace(/```/g,'').trim();
+    const start=raw.indexOf('{');const end=raw.lastIndexOf('}');const jm=start>=0&&end>start?[raw.slice(start,end+1)]:null;
     if(!jm)throw new Error('No JSON en respuesta');
     const parsed=JSON.parse(jm[0]);
     let updated=0;
