@@ -359,7 +359,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
             <div style="font-size:26px">✅</div>
             <div style="flex:1">
               <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Resultado correcto</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Acertás ganador/empate, score diferente</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Acertás quién gana o pierde, diferencia distinta</div>
             </div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--blue)">3 pts</div>
           </div>
@@ -489,7 +489,58 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <button onclick="saveAdminResult()" style="width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">💾 GUARDAR RESULTADO</button>
       </div>
 
-      <div class="sec-title" style="font-size:16px;margin-top:16px">JUGADORES REGISTRADOS</div>
+      <div class="sec-title" style="font-size:16px;margin-top:16px">EDITAR APUESTA DE JUGADOR</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:120px;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:5px">JUGADOR</label>
+            <select id="editUserSel" onchange="loadUserBetForEdit()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
+          </div>
+          <div style="flex:2;min-width:160px;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:5px">PARTIDO</label>
+            <select id="editMatchSel" onchange="loadUserBetForEdit()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
+          </div>
+        </div>
+        <div id="editBetCurrent" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
+            <input id="editHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
+            <input id="editAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+          </div>
+        </div>
+        <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0055CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
+      </div>
+
+      <div class="sec-title" style="font-size:16px;margin-top:16px">EDITAR APUESTA DE JUGADOR</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="margin-bottom:10px;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:6px">JUGADOR</label>
+          <select id="editUserSel" onchange="populateEditMatchSel()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:13px;outline:none;"></select>
+        </div>
+        <div style="margin-bottom:10px;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:6px">PARTIDO</label>
+          <select id="editMatchSel" onchange="loadUserBet()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:13px;outline:none;"></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
+            <input id="editHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
+            <input id="editAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+          </div>
+        </div>
+        <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0052CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
+      </div>
+
+      <div class="sec-title" style="font-size:16px;margin-top:4px">JUGADORES REGISTRADOS</div>
       <div id="adminUsersList"></div>
     </section>
     </section>
@@ -644,11 +695,22 @@ const GROUPS_INIT={
 };
 
 // ═══════════════ SCORING ═══════════════
-const PTS={res:3,exact:5,c1:12,c2:7,c3:5};
+const PTS={res:3,exact:5,diff:4,c1:12,c2:7,c3:5};
 function calcPts(bh,ba,rh,ra){
   if(rh===null||ra===null||bh===null||ba===null)return 0;
+  // 5 pts: resultado exacto (incluye empate exacto)
   if(bh===rh&&ba===ra)return PTS.exact;
-  if(Math.sign(bh-ba)===Math.sign(rh-ra))return PTS.res;
+  const bDiff=bh-ba, rDiff=rh-ra;
+  const bRes=Math.sign(bDiff), rRes=Math.sign(rDiff);
+  // Mismos signos (resultado correcto)
+  if(bRes===rRes){
+    // 4 pts: empate correcto con diferente marcador
+    if(rRes===0)return PTS.diff;
+    // 4 pts: misma diferencia de goles exacta
+    if(bDiff===rDiff)return PTS.diff;
+    // 3 pts: resultado correcto pero diferencia distinta
+    return PTS.res;
+  }
   return 0;
 }
 
@@ -803,7 +865,7 @@ function renderMyBets(){
     const saveBtnHtml=lk?`<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>`
       :`<button class="save-btn" onclick="saveBet(${m.id})">💾 GUARDAR APUESTA</button>`;
     const savedBadge=hasBet&&!lk?`<div class="saved-badge">✅ Guardado: ${bet.h}-${bet.a}</div>`:'';
-    const ptsHtml=pts!==null&&hasBet?`<div class="pts-earned">+${pts} pts ${pts===PTS.exact?'🎯':pts===PTS.res?'✅':''}</div>`:'';
+    const ptsHtml=pts!==null&&hasBet?`<div class="pts-earned">+${pts} pts ${pts===PTS.exact?'🎯':pts===PTS.diff?'⭐':pts===PTS.res?'✅':''}</div>`:'';
     return`<div class="mbc ${m.uru?'uru-match':''}">
       <div class="mbc-head">
         <span class="grp-tag">GRUPO ${m.g}</span>
@@ -978,7 +1040,7 @@ function renderVerBets(){
       if(!b||b.h===undefined)return`<div class="ob-row"><div class="ob-name" style="color:${ac(u)}">${u}</div><div class="ob-pred" style="font-size:10px;color:var(--muted)">Sin apuesta</div></div>`;
       const pts=hasR?calcPts(b.h,b.a,r.hg,r.ag):null;
       const pred=lk?`<div class="ob-pred">${b.h}-${b.a}</div>`:`<div class="ob-pred" style="font-size:10px;color:var(--muted)">🔒</div>`;
-      const pHtml=pts!==null?`<div class="ob-pts" style="color:${pts===PTS.exact?'var(--gold2)':pts===PTS.res?'var(--green)':'var(--muted)'}">${pts>0?'+':''}${pts}</div>`:'';
+      const pHtml=pts!==null?`<div class="ob-pts" style="color:${pts===PTS.exact?'var(--gold2)':pts===PTS.diff?'#FFB347':pts===PTS.res?'var(--green)':'var(--muted)'}">${pts>0?'+':''}${pts}</div>`:'';
       return`<div class="ob-row"><div class="ob-name" style="color:${ac(u)}">${u}</div>${pred}${pHtml}</div>`;
     }).join('');
     return`<div class="mbc">
@@ -1422,19 +1484,23 @@ async function deleteUser(username) {
 
 
 function populateAdminMatchSel() {
-  const sel = document.getElementById('adminMatchSel');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
-  MATCHES.forEach(m => {
-    const r = matchResults[m.id] || {};
-    const hasR = r.hg !== null && r.hg !== undefined;
-    const score = hasR ? ` ✅ ${r.hg}-${r.ag}` : '';
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
-    if(hasR) opt.style.color = '#00E676';
-    sel.appendChild(opt);
-  });
+  // Small delay to ensure DOM is ready after renderAdmin
+  setTimeout(() => {
+    const sel = document.getElementById('adminMatchSel');
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
+    MATCHES.forEach(m => {
+      const r = matchResults[m.id] || {};
+      const hasR = r.hg !== null && r.hg !== undefined;
+      const score = hasR ? ` ✅ ${r.hg}-${r.ag}` : '';
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
+      if(hasR) opt.style.color = '#00E676';
+      sel.appendChild(opt);
+    });
+    console.log('Match selector populated with', MATCHES.length, 'matches');
+  }, 800);
 }
 
 async function saveAdminResult() {
@@ -1451,6 +1517,130 @@ async function saveAdminResult() {
   populateAdminMatchSel();
   document.getElementById('adminHG').value = '';
   document.getElementById('adminAG').value = '';
+}
+
+
+function populateEditSelectors() {
+  setTimeout(() => {
+    // Populate user selector
+    const userSel = document.getElementById('editUserSel');
+    if (!userSel) return;
+    userSel.innerHTML = '<option value="">-- Jugador --</option>';
+    registeredUsers.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u;
+      userSel.appendChild(opt);
+    });
+
+    // Populate match selector
+    const matchSel = document.getElementById('editMatchSel');
+    if (!matchSel) return;
+    matchSel.innerHTML = '<option value="">-- Partido --</option>';
+    MATCHES.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}`;
+      matchSel.appendChild(opt);
+    });
+  }, 900);
+}
+
+function loadUserBetForEdit() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  const infoEl = document.getElementById('editBetCurrent');
+  if (!user || !mid) { if(infoEl) infoEl.textContent = ''; return; }
+  const bet = (allBets[user] || {})[mid];
+  if (bet && bet.h !== undefined) {
+    infoEl.innerHTML = `Apuesta actual de <b style="color:var(--gold)">${user}</b>: <b style="color:#fff">${bet.h} - ${bet.a}</b>`;
+    document.getElementById('editHG').value = bet.h;
+    document.getElementById('editAG').value = bet.a;
+  } else {
+    infoEl.innerHTML = `<b style="color:var(--gold)">${user}</b> no tiene apuesta en este partido`;
+    document.getElementById('editHG').value = '';
+    document.getElementById('editAG').value = '';
+  }
+}
+
+async function saveEditedBet() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  const hg = document.getElementById('editHG').value;
+  const ag = document.getElementById('editAG').value;
+  if (!user) { showToast('Seleccioná un jugador', 'err'); return; }
+  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
+  if (!allBets[user]) allBets[user] = {};
+  allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
+  await fbSaveBets(user);
+  showToast(`✅ Apuesta de ${user} corregida: ${hg}-${ag}`, 'ok');
+  loadUserBetForEdit();
+  renderRanking();
+}
+
+
+function populateEditUserSel() {
+  const sel = document.getElementById('editUserSel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Seleccioná jugador --</option>';
+  registeredUsers.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u;
+    opt.textContent = u;
+    sel.appendChild(opt);
+  });
+}
+
+function populateEditMatchSel() {
+  const user = document.getElementById('editUserSel').value;
+  const sel = document.getElementById('editMatchSel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
+  const bets = allBets[user] || {};
+  MATCHES.forEach(m => {
+    const b = bets[m.id];
+    const hasBet = b && b.h !== undefined;
+    const score = hasBet ? ` (apostó: ${b.h}-${b.a})` : ' (sin apuesta)';
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
+    if(hasBet) opt.style.color = '#E8C96A';
+    sel.appendChild(opt);
+  });
+  // Clear inputs
+  document.getElementById('editHG').value = '';
+  document.getElementById('editAG').value = '';
+}
+
+function loadUserBet() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  if (!user || !mid) return;
+  const bet = (allBets[user] || {})[mid];
+  if (bet && bet.h !== undefined) {
+    document.getElementById('editHG').value = bet.h;
+    document.getElementById('editAG').value = bet.a;
+  } else {
+    document.getElementById('editHG').value = '';
+    document.getElementById('editAG').value = '';
+  }
+}
+
+async function saveEditedBet() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  const hg = document.getElementById('editHG').value;
+  const ag = document.getElementById('editAG').value;
+  if (!user) { showToast('Seleccioná un jugador', 'err'); return; }
+  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
+  if (!allBets[user]) allBets[user] = {};
+  allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
+  await fbSaveBets(user);
+  showToast(`✅ Apuesta de ${user} corregida: ${hg}-${ag}`, 'ok');
+  renderAll();
+  populateEditMatchSel();
 }
 
 // ═══════════════ INIT ═══════════════
