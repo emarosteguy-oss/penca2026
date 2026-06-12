@@ -1118,7 +1118,8 @@ Dame SOLO JSON válido sin markdown ni backticks:
     showToast(`✅ IA: ${updated} resultado${updated!==1?'s':''} actualizados`,'ok');
   }catch(e){
     console.error('AI error:',e);
-    showToast('⚠️ IA no disponible — cargá el resultado en Admin','err');
+    console.error('AI error details:', e.message);
+    showToast('⚠️ IA no disponible — cargá en Admin','err');
   }
   finally{aiRunning=false;if(icon)icon.classList.remove('spin');}
 }
@@ -1147,7 +1148,7 @@ function showSection(name,btn){
   else if(name==='bracket') renderBracket();
   else if(name==='ver') renderVerBets();
   else if(name==='reglas') {} 
-  else if(name==='admin') renderAdmin();
+  else if(name==='admin'){ renderAdmin().then(()=>{ populateAdminMatchSel(); populateEditUserSel(); }); }
 }
 function filterBets(f,btn){
   betFilter=f;
@@ -1431,6 +1432,9 @@ async function renderAdmin() {
     el.innerHTML = '<div class="empty"><div class="empty-icon">👥</div><div class="empty-ttl">SIN USUARIOS AÚN</div><div style="font-size:12px;margin-top:4px">Nadie se ha registrado todavía</div></div>';
     return;
   }
+  // Data is loaded — populate selectors now
+  populateAdminMatchSel();
+  populateEditUserSel();
   const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
   el.innerHTML = scores.map(u => {
     const betCount = Object.keys(allBets[u.name] || {}).filter(k => !isNaN(k)).length;
@@ -1484,23 +1488,19 @@ async function deleteUser(username) {
 
 
 function populateAdminMatchSel() {
-  // Small delay to ensure DOM is ready after renderAdmin
-  setTimeout(() => {
-    const sel = document.getElementById('adminMatchSel');
-    if (!sel) return;
-    sel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
-    MATCHES.forEach(m => {
-      const r = matchResults[m.id] || {};
-      const hasR = r.hg !== null && r.hg !== undefined;
-      const score = hasR ? ` ✅ ${r.hg}-${r.ag}` : '';
-      const opt = document.createElement('option');
-      opt.value = m.id;
-      opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
-      if(hasR) opt.style.color = '#00E676';
-      sel.appendChild(opt);
-    });
-    console.log('Match selector populated with', MATCHES.length, 'matches');
-  }, 800);
+  const sel = document.getElementById('adminMatchSel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
+  MATCHES.forEach(m => {
+    const r = matchResults[m.id] || {};
+    const hasR = r.hg !== null && r.hg !== undefined;
+    const score = hasR ? ` ✅ ${r.hg}-${r.ag}` : '';
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
+    if(hasR) opt.style.color = '#00E676';
+    sel.appendChild(opt);
+  });
 }
 
 async function saveAdminResult() {
