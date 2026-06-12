@@ -454,93 +454,66 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
     <section class="section" id="section-admin">
       <div class="sec-title">PANEL ADMIN</div>
       <div style="background:rgba(200,16,46,.06);border:1px solid rgba(200,16,46,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--muted)">
-        🔒 Solo visible para el administrador.
+        🔒 Solo visible para el administrador — Boli.
       </div>
 
+      <!-- CARGAR RESULTADO -->
       <div class="sec-title" style="font-size:16px">CARGAR RESULTADO</div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:8px;">
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <button onclick="aiRefresh()" style="flex:1;background:rgba(0,61,165,.15);border:1px solid rgba(0,61,165,.35);color:#7AB0FF;border-radius:7px;padding:10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;">🤖 ACTUALIZAR CON IA</button>
-        </div>
-        <div style="text-align:center;font-size:11px;color:var(--muted);margin-bottom:12px;letter-spacing:1px">— O CARGÁ MANUALMENTE —</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
         <div style="margin-bottom:10px;">
           <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:6px">PARTIDO</label>
-          <select id="adminMatchSel" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
+          <select id="adminMatchSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
-            <input id="adminHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+            <input id="adminHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
           </div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
-            <input id="adminAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+            <input id="adminAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
           </div>
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">ESTADO</label>
-            <select id="adminStatus" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:11px;outline:none;">
+            <select id="adminStatus" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:11px;outline:none;">
               <option value="finished">✅ Final</option>
               <option value="live">🔴 Vivo</option>
               <option value="upcoming">⏳ Próximo</option>
             </select>
           </div>
         </div>
-        <button onclick="saveAdminResult()" style="width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">💾 GUARDAR RESULTADO</button>
+        <button onclick="saveAdminResult()" style="width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;">💾 GUARDAR RESULTADO</button>
+        <div id="adminResultStatus" style="text-align:center;font-size:12px;color:var(--muted);min-height:18px;"></div>
       </div>
 
-      <div class="sec-title" style="font-size:16px;margin-top:16px">EDITAR APUESTA DE JUGADOR</div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
-        <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;">
-          <div style="flex:1;min-width:120px;">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:5px">JUGADOR</label>
-            <select id="editUserSel" onchange="loadUserBetForEdit()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
-          </div>
-          <div style="flex:2;min-width:160px;">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:5px">PARTIDO</label>
-            <select id="editMatchSel" onchange="loadUserBetForEdit()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
-          </div>
-        </div>
-        <div id="editBetCurrent" style="font-size:12px;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
-          <div style="flex:1;text-align:center;">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
-            <input id="editHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
-          </div>
-          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
-          <div style="flex:1;text-align:center;">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
-            <input id="editAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
-          </div>
-        </div>
-        <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0055CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
-      </div>
-
-      <div class="sec-title" style="font-size:16px;margin-top:16px">EDITAR APUESTA DE JUGADOR</div>
+      <!-- EDITAR APUESTA -->
+      <div class="sec-title" style="font-size:16px">EDITAR APUESTA DE JUGADOR</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
         <div style="margin-bottom:10px;">
           <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:6px">JUGADOR</label>
-          <select id="editUserSel" onchange="populateEditMatchSel()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:13px;outline:none;"></select>
+          <select id="editUserSel" onchange="onEditUserChange()" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:13px;outline:none;"></select>
         </div>
         <div style="margin-bottom:10px;">
           <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:6px">PARTIDO</label>
-          <select id="editMatchSel" onchange="loadUserBet()" style="width:100%;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:13px;outline:none;"></select>
+          <select id="editMatchSel" onchange="onEditMatchChange()" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
         </div>
         <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
-            <input id="editHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+            <input id="editHG" type="number" min="0" max="20" placeholder="-" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
           </div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
-            <input id="editAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:rgba(255,255,255,.06);border:2px solid var(--border);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;-moz-appearance:textfield;">
+            <input id="editAG" type="number" min="0" max="20" placeholder="-" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
           </div>
         </div>
         <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0052CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
       </div>
 
-      <div class="sec-title" style="font-size:16px;margin-top:4px">JUGADORES REGISTRADOS</div>
+      <!-- JUGADORES -->
+      <div class="sec-title" style="font-size:16px">JUGADORES REGISTRADOS</div>
       <div id="adminUsersList"></div>
     </section>
     </section>
@@ -1148,7 +1121,7 @@ function showSection(name,btn){
   else if(name==='bracket') renderBracket();
   else if(name==='ver') renderVerBets();
   else if(name==='reglas') {} 
-  else if(name==='admin'){ renderAdmin().then(()=>{ populateAdminMatchSel(); populateEditUserSel(); }); }
+  else if(name==='admin'){ renderAdmin().then(()=>{ initAdminSelectors(); }); }
 }
 function filterBets(f,btn){
   betFilter=f;
@@ -1433,8 +1406,7 @@ async function renderAdmin() {
     return;
   }
   // Data is loaded — populate selectors now
-  populateAdminMatchSel();
-  populateEditUserSel();
+  initAdminSelectors();
   const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
   el.innerHTML = scores.map(u => {
     const betCount = Object.keys(allBets[u.name] || {}).filter(k => !isNaN(k)).length;
@@ -1487,21 +1459,7 @@ async function deleteUser(username) {
 }
 
 
-function populateAdminMatchSel() {
-  const sel = document.getElementById('adminMatchSel');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
-  MATCHES.forEach(m => {
-    const r = matchResults[m.id] || {};
-    const hasR = r.hg !== null && r.hg !== undefined;
-    const score = hasR ? ` ✅ ${r.hg}-${r.ag}` : '';
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
-    if(hasR) opt.style.color = '#00E676';
-    sel.appendChild(opt);
-  });
-}
+
 
 async function saveAdminResult() {
   const mid = parseInt(document.getElementById('adminMatchSel').value);
@@ -1563,69 +1521,14 @@ function loadUserBetForEdit() {
   }
 }
 
-async function saveEditedBet() {
-  const user = document.getElementById('editUserSel').value;
-  const mid = parseInt(document.getElementById('editMatchSel').value);
-  const hg = document.getElementById('editHG').value;
-  const ag = document.getElementById('editAG').value;
-  if (!user) { showToast('Seleccioná un jugador', 'err'); return; }
-  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
-  if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
-  if (!allBets[user]) allBets[user] = {};
-  allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
-  await fbSaveBets(user);
-  showToast(`✅ Apuesta de ${user} corregida: ${hg}-${ag}`, 'ok');
-  loadUserBetForEdit();
-  renderRanking();
-}
 
 
-function populateEditUserSel() {
-  const sel = document.getElementById('editUserSel');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Seleccioná jugador --</option>';
-  registeredUsers.forEach(u => {
-    const opt = document.createElement('option');
-    opt.value = u;
-    opt.textContent = u;
-    sel.appendChild(opt);
-  });
-}
 
-function populateEditMatchSel() {
-  const user = document.getElementById('editUserSel').value;
-  const sel = document.getElementById('editMatchSel');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
-  const bets = allBets[user] || {};
-  MATCHES.forEach(m => {
-    const b = bets[m.id];
-    const hasBet = b && b.h !== undefined;
-    const score = hasBet ? ` (apostó: ${b.h}-${b.a})` : ' (sin apuesta)';
-    const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = `Gr.${m.g} ${m.h} vs ${m.a}${score}`;
-    if(hasBet) opt.style.color = '#E8C96A';
-    sel.appendChild(opt);
-  });
-  // Clear inputs
-  document.getElementById('editHG').value = '';
-  document.getElementById('editAG').value = '';
-}
 
-function loadUserBet() {
-  const user = document.getElementById('editUserSel').value;
-  const mid = parseInt(document.getElementById('editMatchSel').value);
-  if (!user || !mid) return;
-  const bet = (allBets[user] || {})[mid];
-  if (bet && bet.h !== undefined) {
-    document.getElementById('editHG').value = bet.h;
-    document.getElementById('editAG').value = bet.a;
-  } else {
-    document.getElementById('editHG').value = '';
-    document.getElementById('editAG').value = '';
-  }
-}
+
+
+
+
 
 async function saveEditedBet() {
   const user = document.getElementById('editUserSel').value;
@@ -1642,6 +1545,108 @@ async function saveEditedBet() {
   renderAll();
   populateEditMatchSel();
 }
+
+
+// ═══════════════ ADMIN FUNCTIONS ═══════════════
+
+function initAdminSelectors() {
+  // Populate match selector for results
+  const matchSel = document.getElementById('adminMatchSel');
+  if (matchSel) {
+    matchSel.innerHTML = '<option value="">-- Seleccioná un partido --</option>';
+    MATCHES.forEach(m => {
+      const r = matchResults[m.id] || {};
+      const hasR = r.hg !== null && r.hg !== undefined;
+      const score = hasR ? ' ✅ ' + r.hg + '-' + r.ag : '';
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = 'Gr.' + m.g + ' ' + m.h + ' vs ' + m.a + score;
+      if (hasR) opt.style.color = '#00E676';
+      matchSel.appendChild(opt);
+    });
+  }
+
+  // Populate user selector for editing bets
+  const userSel = document.getElementById('editUserSel');
+  if (userSel) {
+    userSel.innerHTML = '<option value="">-- Seleccioná jugador --</option>';
+    registeredUsers.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      opt.textContent = u;
+      userSel.appendChild(opt);
+    });
+  }
+}
+
+function onEditUserChange() {
+  const user = document.getElementById('editUserSel').value;
+  const matchSel = document.getElementById('editMatchSel');
+  if (!matchSel) return;
+  matchSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
+  if (!user) return;
+  const bets = allBets[user] || {};
+  MATCHES.forEach(m => {
+    const b = bets[m.id];
+    const hasBet = b && b.h !== undefined;
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = 'Gr.' + m.g + ' ' + m.h + ' vs ' + m.a + (hasBet ? ' (apostó: ' + b.h + '-' + b.a + ')' : '');
+    if (hasBet) opt.style.color = '#E8C96A';
+    matchSel.appendChild(opt);
+  });
+  document.getElementById('editHG').value = '';
+  document.getElementById('editAG').value = '';
+}
+
+function onEditMatchChange() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  if (!user || !mid) return;
+  const bet = (allBets[user] || {})[mid];
+  if (bet && bet.h !== undefined) {
+    document.getElementById('editHG').value = bet.h;
+    document.getElementById('editAG').value = bet.a;
+  } else {
+    document.getElementById('editHG').value = '';
+    document.getElementById('editAG').value = '';
+  }
+}
+
+async function saveAdminResult() {
+  const mid = parseInt(document.getElementById('adminMatchSel').value);
+  const hg = document.getElementById('adminHG').value;
+  const ag = document.getElementById('adminAG').value;
+  const status = document.getElementById('adminStatus').value;
+  const statusEl = document.getElementById('adminResultStatus');
+  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
+  matchResults[mid] = { hg: parseInt(hg), ag: parseInt(ag), status };
+  await fbSaveResults();
+  showToast('✅ ' + MATCHES.find(m=>m.id===mid).h + ' ' + hg + '-' + ag + ' ' + MATCHES.find(m=>m.id===mid).a, 'ok');
+  if (statusEl) statusEl.textContent = '✅ Guardado correctamente';
+  renderAll();
+  initAdminSelectors();
+  document.getElementById('adminHG').value = '';
+  document.getElementById('adminAG').value = '';
+}
+
+async function saveEditedBet() {
+  const user = document.getElementById('editUserSel').value;
+  const mid = parseInt(document.getElementById('editMatchSel').value);
+  const hg = document.getElementById('editHG').value;
+  const ag = document.getElementById('editAG').value;
+  if (!user) { showToast('Seleccioná un jugador', 'err'); return; }
+  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
+  if (!allBets[user]) allBets[user] = {};
+  allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
+  await fbSaveBets(user);
+  showToast('✅ Apuesta de ' + user + ' corregida: ' + hg + '-' + ag, 'ok');
+  renderAll();
+  onEditUserChange();
+}
+
 
 // ═══════════════ INIT ═══════════════
 setupPWA();
