@@ -266,9 +266,11 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
       <button class="nav-tab" onclick="showSection('apuestas',this)">⚽ Mis Apuestas</button>
       <button class="nav-tab" onclick="showSection('campeones',this)">🥇 Campeón</button>
       <button class="nav-tab" onclick="showSection('grupos',this)">📊 Grupos</button>
+      <button class="nav-tab" onclick="showSection('knockout',this)">⚔️ Eliminación</button>
       <button class="nav-tab" onclick="showSection('bracket',this)">🗺 Cuadro</button>
       <button class="nav-tab" onclick="showSection('ver',this)">👁 Ver Todos</button>
       <button class="nav-tab" onclick="showSection('reglas',this)">📋 Reglas</button>
+      <button class="nav-tab" onclick="showSection('knockout',this)">🏆 Eliminatorias</button>
       <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
     </div>
   </nav>
@@ -307,6 +309,14 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <button class="refresh-btn" onclick="aiRefresh()">↻ Actualizar</button>
       </div>
       <div class="groups-grid" id="groupsGrid"></div>
+    </section>
+
+
+    <section class="section" id="section-knockout">
+      <div class="sec-title">FASE ELIMINATORIA</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Apostá el resultado. Si apostás empate, elegí quién gana en penales.</p>
+      <div class="filter-bar" id="koRoundFilter"></div>
+      <div id="koMatchesList"></div>
     </section>
 
     <section class="section" id="section-bracket">
@@ -350,16 +360,25 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
             <div style="font-size:26px">🎯</div>
             <div style="flex:1">
               <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Resultado exacto</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Ej: apostás 2-1 y sale 2-1</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Ej: apostás 2-1 y sale 2-1. Incluye empate exacto (0-0 → 0-0)</div>
             </div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--green)">5 pts</div>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:12px;background:rgba(255,179,71,.07);border:1px solid rgba(255,179,71,.25);border-radius:8px;padding:12px;">
+            <div style="font-size:26px">⭐</div>
+            <div style="flex:1">
+              <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Misma diferencia de goles</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Ej: sale 4-1 (+3) y apostás 3-0 (+3). También empate correcto con diferente score (1-1 → 2-2)</div>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:#FFB347">4 pts</div>
           </div>
 
           <div style="display:flex;align-items:center;gap:12px;background:rgba(79,195,247,.07);border:1px solid rgba(79,195,247,.2);border-radius:8px;padding:12px;">
             <div style="font-size:26px">✅</div>
             <div style="flex:1">
               <div style="font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:14px;color:#fff">Resultado correcto</div>
-              <div style="font-size:11px;color:var(--muted);margin-top:2px">Acertás quién gana o pierde, diferencia distinta</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px">Acertás quién gana o pierde, diferencia distinta. Ej: sale 4-1 y apostás 2-0</div>
             </div>
             <div style="font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--blue)">3 pts</div>
           </div>
@@ -451,6 +470,22 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
     </section>
 
 
+
+    <section class="section" id="section-knockout">
+      <div class="sec-title">ELIMINATORIAS</div>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Apostá los resultados de la fase eliminatoria. Si apostás empate, elegí quién gana en penales.</p>
+
+      <div class="filter-bar" id="koFilterBar">
+        <button class="fbtn active" onclick="setKoFilter('r16',this)">Octavos</button>
+        <button class="fbtn" onclick="setKoFilter('qf',this)">Cuartos</button>
+        <button class="fbtn" onclick="setKoFilter('sf',this)">Semis</button>
+        <button class="fbtn" onclick="setKoFilter('final',this)">Final</button>
+        <button class="fbtn" onclick="setKoFilter('third',this)">3° Puesto</button>
+      </div>
+
+      <div id="koMatchesList"></div>
+    </section>
+
     <section class="section" id="section-admin">
       <div class="sec-title">PANEL ADMIN</div>
       <div style="background:rgba(200,16,46,.06);border:1px solid rgba(200,16,46,.2);border-radius:10px;padding:14px;margin-bottom:16px;font-size:12px;color:var(--muted)">
@@ -487,6 +522,69 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <div id="adminResultStatus" style="text-align:center;font-size:12px;color:var(--muted);min-height:18px;"></div>
       </div>
 
+      <!-- AGREGAR PARTIDO ELIMINATORIO -->
+      <div class="sec-title" style="font-size:16px">AGREGAR PARTIDO ELIMINATORIO</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">RONDA</label>
+            <select id="koRoundSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
+              <option value="r16">Octavos</option><option value="qf">Cuartos</option><option value="sf">Semis</option><option value="third">3er Puesto</option><option value="final">Final</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">FECHA (hora UYT)</label>
+            <input id="koDtInput" type="datetime-local" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
+            <input id="koHomeInput" type="text" placeholder="Ej: Uruguay" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
+          </div>
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
+            <input id="koAwayInput" type="text" placeholder="Ej: Brasil" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
+          </div>
+        </div>
+        <input id="koVenueInput" type="text" placeholder="Estadio (opcional)" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;margin-bottom:10px;">
+        <button onclick="addKoMatchFromAdmin()" style="width:100%;background:linear-gradient(135deg,#009A44,#007733);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">➕ AGREGAR PARTIDO</button>
+      </div>
+
+      <!-- RESULTADO ELIMINATORIO -->
+      <div class="sec-title" style="font-size:16px">RESULTADO ELIMINATORIO</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="margin-bottom:10px;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--gold);display:block;margin-bottom:6px">PARTIDO</label>
+          <select id="koResultMatchSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:12px;outline:none;"></select>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
+            <input id="koHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
+          </div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
+            <input id="koAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
+          </div>
+          <div style="flex:1;text-align:center;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">ESTADO</label>
+            <select id="koStatus" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:11px;outline:none;">
+              <option value="finished">✅ Final</option><option value="live">🔴 Vivo</option>
+            </select>
+          </div>
+        </div>
+        <div id="koPenSection" style="margin-bottom:10px;display:none;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">GANADOR EN PENALES:</label>
+          <select id="koPenWinner" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
+            <option value="">-- Sin penales --</option>
+          </select>
+        </div>
+        <button onclick="checkKoPenSection()" style="width:100%;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);color:var(--gold2);border-radius:7px;padding:9px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:13px;letter-spacing:1px;cursor:pointer;margin-bottom:8px;">🔍 ¿HUBO PENALES?</button>
+        <button onclick="saveKoResultAdmin()" style="width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">💾 GUARDAR RESULTADO</button>
+      </div>
+
       <!-- EDITAR APUESTA -->
       <div class="sec-title" style="font-size:16px">EDITAR APUESTA DE JUGADOR</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
@@ -510,6 +608,69 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
           </div>
         </div>
         <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0052CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
+      </div>
+
+      <!-- AGREGAR PARTIDO KO -->
+      <div class="sec-title" style="font-size:16px;margin-top:4px">AGREGAR PARTIDO ELIMINATORIO</div>
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">RONDA</label>
+            <select id="koRoundSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
+              <option value="r16">Octavos</option>
+              <option value="qf">Cuartos</option>
+              <option value="sf">Semis</option>
+              <option value="final">Final</option>
+              <option value="third">3° Puesto</option>
+            </select>
+          </div>
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">N° PARTIDO</label>
+            <input id="koNumInput" type="number" min="1" max="16" value="1" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:16px;text-align:center;outline:none;">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:10px;">
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">EQUIPO LOCAL</label>
+            <select id="koHomeSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;"></select>
+          </div>
+          <div style="flex:1">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">EQUIPO VISITANTE</label>
+            <select id="koAwaySel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;"></select>
+          </div>
+        </div>
+        <button onclick="addKoMatch()" style="width:100%;background:linear-gradient(135deg,#009A44,#007A35);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;">➕ AGREGAR CRUCE</button>
+
+        <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;color:var(--gold);display:block;margin-bottom:8px">CARGAR RESULTADO ELIMINATORIO</label>
+          <select id="koResultSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;margin-bottom:8px;"></select>
+          <div style="display:flex;gap:8px;margin-bottom:8px;align-items:flex-end;">
+            <div style="flex:1;text-align:center;">
+              <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);display:block;margin-bottom:4px">LOCAL</label>
+              <input id="koHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:22px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--muted);padding-bottom:8px">-</div>
+            <div style="flex:1;text-align:center;">
+              <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);display:block;margin-bottom:4px">VISITANTE</label>
+              <input id="koAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:22px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
+            </div>
+            <div style="flex:1;text-align:center;">
+              <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);display:block;margin-bottom:4px">ESTADO</label>
+              <select id="koStatus" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:11px;outline:none;">
+                <option value="finished">✅ Final</option>
+                <option value="live">🔴 Vivo</option>
+                <option value="upcoming">⏳ Próximo</option>
+              </select>
+            </div>
+          </div>
+          <div id="koPenRow" style="display:none;margin-bottom:8px;">
+            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;color:var(--gold);display:block;margin-bottom:4px">GANADOR EN PENALES</label>
+            <select id="koPenWinner" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
+              <option value="">Sin penales</option>
+            </select>
+          </div>
+          <button onclick="saveKoResult()" style="width:100%;background:linear-gradient(135deg,#C8102E,#A00D24);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;">💾 GUARDAR RESULTADO</button>
+        </div>
       </div>
 
       <!-- JUGADORES -->
@@ -651,6 +812,17 @@ const MATCHES=[
   {id:72,g:'J',dt:'2026-06-28T02:00:00Z',h:'Jordania',a:'Argentina',v:'AT&T Stadium, Dallas'},
 ];
 
+
+// ═══════════════ KNOCKOUT MATCHES ═══════════════
+let KNOCKOUT_MATCHES = [];
+const KO_ROUNDS = [
+  { key:'r16', label:'OCTAVOS' },
+  { key:'qf',  label:'CUARTOS' },
+  { key:'sf',  label:'SEMIS' },
+  { key:'third', label:'3er PUESTO' },
+  { key:'final', label:'FINAL' },
+];
+
 const ALL_TEAMS=[...new Set(MATCHES.flatMap(m=>[m.h,m.a]))].sort();
 const GROUPS_INIT={
   A:['México','Sudáfrica','Corea del Sur','Chequia'],
@@ -668,23 +840,27 @@ const GROUPS_INIT={
 };
 
 // ═══════════════ SCORING ═══════════════
-const PTS={res:3,exact:5,diff:4,c1:12,c2:7,c3:5};
-function calcPts(bh,ba,rh,ra){
+const PTS={res:3,exact:5,diff:4,penWrong:2,c1:12,c2:7,c3:5};
+function calcPts(bh,ba,rh,ra,bPen,rPen){
   if(rh===null||ra===null||bh===null||ba===null)return 0;
-  // 5 pts: resultado exacto (incluye empate exacto)
-  if(bh===rh&&ba===ra)return PTS.exact;
-  const bDiff=bh-ba, rDiff=rh-ra;
-  const bRes=Math.sign(bDiff), rRes=Math.sign(rDiff);
-  // Mismos signos (resultado correcto)
-  if(bRes===rRes){
-    // 4 pts: empate correcto con diferente marcador
-    if(rRes===0)return PTS.diff;
-    // 4 pts: misma diferencia de goles exacta
+  const exactScore=(bh===rh&&ba===ra);
+  const bDiff=bh-ba,rDiff=rh-ra;
+  const bRes=Math.sign(bDiff),rRes=Math.sign(rDiff);
+  const isDrawResult=(rRes===0);
+  const betDraw=(bRes===0);
+  if(isDrawResult){
+    if(!betDraw)return 0;
+    const penOK=(bPen&&rPen&&bPen===rPen);
+    if(exactScore&&penOK)return PTS.exact;
+    if(exactScore&&!penOK)return PTS.res;
+    if(!exactScore&&penOK)return PTS.diff;
+    return PTS.penWrong;
+  } else {
+    if(bRes!==rRes)return 0;
+    if(exactScore)return PTS.exact;
     if(bDiff===rDiff)return PTS.diff;
-    // 3 pts: resultado correcto pero diferencia distinta
     return PTS.res;
   }
-  return 0;
 }
 
 // ═══════════════ STATE ═══════════════
@@ -769,17 +945,24 @@ function al(n){return n.charAt(0).toUpperCase();}
 // ═══════════════ SCORE CALC ═══════════════
 function getUserScore(u){
   const bets=allBets[u]||{};
-  let pts=0,exact=0,res=0;
+  let pts=0,exact=0,res=0,diff=0;
   MATCHES.forEach(m=>{
     const b=bets[m.id];const r=matchResults[m.id];
     if(!b||!r||r.hg===null||r.hg===undefined)return;
-    const p=calcPts(b.h,b.a,r.hg,r.ag);
-    pts+=p;if(p===PTS.exact)exact++;else if(p===PTS.res)res++;
+    const p=calcPts(b.h,b.a,r.hg,r.ag,null,null);
+    pts+=p;if(p===PTS.exact)exact++;else if(p===PTS.diff)diff++;else if(p===PTS.res)res++;
+  });
+  KNOCKOUT_MATCHES.forEach(m=>{
+    const bid='ko_'+m.id;
+    const b=bets[bid];const r=matchResults[bid];
+    if(!b||!r||r.hg===null||r.hg===undefined)return;
+    const p=calcPts(b.h,b.a,r.hg,r.ag,b.pen,r.pen);
+    pts+=p;if(p===PTS.exact)exact++;else if(p===PTS.diff)diff++;else if(p===PTS.res)res++;
   });
   if(matchResults.winner&&bets.champ1===matchResults.winner)pts+=PTS.c1;
   if(matchResults.second&&bets.champ2===matchResults.second)pts+=PTS.c2;
-  if(matchResults.third&&bets.champ3===matchResults.third) pts+=PTS.c3;
-  return{pts,exact,res};
+  if(matchResults.third&&bets.champ3===matchResults.third)pts+=PTS.c3;
+  return{pts,exact,res,diff};
 }
 
 // ═══════════════ RANKING ═══════════════
@@ -1100,7 +1283,7 @@ Dame SOLO JSON válido sin markdown ni backticks:
 // ═══════════════ RENDER ALL ═══════════════
 function renderAll(){
   renderRanking();renderMyBets();renderChampions();
-  renderGroups();renderBracket();renderVerBets();updateHeader();
+  renderGroups();renderBracket();renderVerBets();renderKnockout();updateHeader();
 }
 function updateHeader(){
   if(!currentUser)return;
@@ -1120,8 +1303,10 @@ function showSection(name,btn){
   else if(name==='grupos') renderGroups();
   else if(name==='bracket') renderBracket();
   else if(name==='ver') renderVerBets();
+  else if(name==='knockout') renderKnockout();
+  else if(name==='knockout'){ renderKoMatches(); }
   else if(name==='reglas') {} 
-  else if(name==='admin'){ renderAdmin().then(()=>{ initAdminSelectors(); }); }
+  else if(name==='admin'){ renderAdmin().then(()=>{ initAdminSelectors(); populateKoResultSel(); }); }
 }
 function filterBets(f,btn){
   betFilter=f;
@@ -1648,11 +1833,468 @@ async function saveEditedBet() {
 }
 
 
+
+// ═══════════════ KNOCKOUT STAGE ═══════════════
+let koRoundFilter='r16';
+
+async function loadKnockoutMatches(){
+  try{
+    const db=window._db,doc=window._fbDoc,getDoc=window._fbGetDoc;
+    const snap=await getDoc(doc(db,'penca','knockout'));
+    if(snap.exists())KNOCKOUT_MATCHES=snap.data().matches||[];
+  }catch(e){console.error('KO load:',e);}
+}
+
+async function saveKnockoutMatches(){
+  try{
+    const db=window._db,doc=window._fbDoc,setDoc=window._fbSetDoc;
+    await setDoc(doc(db,'penca','knockout'),{matches:KNOCKOUT_MATCHES});
+  }catch(e){console.error('KO save:',e);}
+}
+
+function renderKnockout(){
+  const bar=document.getElementById('koRoundFilter');
+  const el=document.getElementById('koMatchesList');
+  if(!el)return;
+  const rounds=KO_ROUNDS.filter(r=>KNOCKOUT_MATCHES.some(m=>m.round===r.key));
+  if(!rounds.length){
+    if(bar)bar.innerHTML='';
+    el.innerHTML='<div class="empty"><div class="empty-icon">⏳</div><div class="empty-ttl">PRÓXIMAMENTE</div><div style="font-size:12px;margin-top:6px;color:var(--muted)">El admin cargará los cruces cuando termine la fase de grupos</div></div>';
+    return;
+  }
+  if(bar)bar.innerHTML=rounds.map(r=>`<button class="fbtn ${koRoundFilter===r.key?'active':''}" onclick="setKoFilter('${r.key}',this)">${r.label}</button>`).join('');
+  const matches=KNOCKOUT_MATCHES.filter(m=>m.round===koRoundFilter);
+  const bets=allBets[currentUser]||{};
+  el.innerHTML=matches.map(m=>{
+    const bid='ko_'+m.id;
+    const b=bets[bid]||{};
+    const r=matchResults[bid]||{};
+    const lk=new Date()>=new Date(m.dt);
+    const hasR=r.hg!==null&&r.hg!==undefined;
+    const pts=hasR?calcPts(b.h,b.a,r.hg,r.ag,b.pen,r.pen):null;
+    const hasBet=b.h!==undefined&&b.a!==undefined;
+    const betIsDraw=hasBet&&b.h===b.a;
+    const realIsDraw=hasR&&r.hg===r.ag;
+    const stHtml=r.status==='live'?'<span class="st-live"><span class="pdot"></span>EN VIVO</span>':r.status==='finished'?'<span class="st-fin">FIN</span>':'<span class="st-up">PRÓXIMO</span>';
+    const roundLabel=KO_ROUNDS.find(x=>x.key===m.round)?.label||m.round;
+    const scoreHtml=hasR?`<div class="off-score">${r.hg}-${r.ag}</div>${realIsDraw&&r.pen?`<div style="font-size:10px;color:var(--gold);text-align:center">PEN: ${r.pen} 🏆</div>`:''}`:
+      '<div class="vs-txt">VS</div>';
+    const penHtml=(!lk&&betIsDraw)?`
+      <div style="margin-top:8px">
+        <div class="bet-lbl">¿QUIÉN GANA EN PENALES?</div>
+        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px">
+          <button onclick="setPenBet('${bid}','${m.h}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.h?'var(--gold)':'var(--border)'};background:${b.pen===m.h?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.h?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.h,'flag-img')} ${m.h}</button>
+          <button onclick="setPenBet('${bid}','${m.a}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.a?'var(--gold)':'var(--border)'};background:${b.pen===m.a?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.a?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.a,'flag-img')} ${m.a}</button>
+        </div>
+      </div>`:(hasBet&&betIsDraw&&b.pen&&!lk)?`<div style="font-size:11px;color:var(--gold);text-align:center;margin-top:6px">Penales: ${b.pen} ✓</div>`:'';
+    const ptsHtml=pts!==null&&hasBet?`<div class="pts-earned">+${pts} pts ${pts===PTS.exact?'🎯':pts===PTS.diff?'⭐':pts===PTS.res?'✅':pts===PTS.penWrong?'🔵':''}</div>`:'';
+    return `<div class="mbc">
+      <div class="mbc-head"><span class="grp-tag">${roundLabel}</span><span class="time-tag">📅 ${toUYTDate(m.dt)} · ${toUYT(m.dt)}</span>${stHtml}</div>
+      <div class="mbc-body">
+        <div class="teams-row">
+          <div class="t-side">${fi(m.h,'flag-lg')}<div class="t-name">${m.h}</div></div>
+          <div class="score-center">${scoreHtml}</div>
+          <div class="t-side">${fi(m.a,'flag-lg')}<div class="t-name">${m.a}</div></div>
+        </div>
+        <div class="bet-lbl">TU APUESTA</div>
+        <div class="bet-row">
+          <input class="si" id="koh_${bid}" type="number" min="0" max="20" placeholder="-" value="${b.h!==undefined?b.h:''}" ${lk?'disabled':''} oninput="onKoInput('${bid}')">
+          <span class="sd">-</span>
+          <input class="si" id="koa_${bid}" type="number" min="0" max="20" placeholder="-" value="${b.a!==undefined?b.a:''}" ${lk?'disabled':''} oninput="onKoInput('${bid}')">
+        </div>
+        <div id="kopenrow_${bid}">${penHtml}</div>
+        ${lk?'<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>':'<button class="save-btn" onclick="saveKoBet(''+bid+'')">💾 GUARDAR APUESTA</button>'}
+        ${ptsHtml}
+        <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:5px">📍 ${m.venue||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setKoFilter(round,btn){
+  koRoundFilter=round;
+  document.querySelectorAll('#koRoundFilter .fbtn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderKnockout();
+}
+
+function onKoInput(bid){
+  const hv=document.getElementById('koh_'+bid)?.value;
+  const av=document.getElementById('koa_'+bid)?.value;
+  const row=document.getElementById('kopenrow_'+bid);
+  if(!row)return;
+  const m=KNOCKOUT_MATCHES.find(x=>'ko_'+x.id===bid);
+  if(!m)return;
+  const b=( allBets[currentUser]||{})[bid]||{};
+  if(hv!==''&&av!==''&&parseInt(hv)===parseInt(av)){
+    row.innerHTML=`<div style="margin-top:8px"><div class="bet-lbl">¿QUIÉN GANA EN PENALES?</div><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px"><button onclick="setPenBet('${bid}','${m.h}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.h?'var(--gold)':'var(--border)'};background:${b.pen===m.h?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.h?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.h,'flag-img')} ${m.h}</button><button onclick="setPenBet('${bid}','${m.a}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.a?'var(--gold)':'var(--border)'};background:${b.pen===m.a?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.a?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.a,'flag-img')} ${m.a}</button></div></div>`;
+  } else {
+    row.innerHTML='';
+  }
+}
+
+async function saveKoBet(bid){
+  const hv=document.getElementById('koh_'+bid)?.value;
+  const av=document.getElementById('koa_'+bid)?.value;
+  if(hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
+  if(!allBets[currentUser])allBets[currentUser]={};
+  const existing=(allBets[currentUser][bid])||{};
+  allBets[currentUser][bid]={...existing,h:parseInt(hv),a:parseInt(av)};
+  await fbSaveBets(currentUser);
+  showToast('✅ Apuesta guardada: '+hv+'-'+av,'ok');
+  renderKnockout();updateHeader();
+}
+
+async function setPenBet(bid,team){
+  if(!allBets[currentUser])allBets[currentUser]={};
+  allBets[currentUser][bid]={...(allBets[currentUser][bid]||{}),pen:team};
+  await fbSaveBets(currentUser);
+  showToast('✅ Penales: '+team,'ok');
+  renderKnockout();
+}
+
+async function saveKoResult(bid,hg,ag,status,pen){
+  matchResults[bid]={hg,ag,status,pen:pen||null};
+  await fbSaveResults();
+  renderAll();
+  showToast('✅ Resultado guardado','ok');
+}
+
+// ── ADMIN KO ──
+function addKoMatchFromAdmin(){
+  const round=document.getElementById('koRoundSel').value;
+  const h=document.getElementById('koHomeInput').value.trim();
+  const a=document.getElementById('koAwayInput').value.trim();
+  const dtLocal=document.getElementById('koDtInput').value;
+  const venue=document.getElementById('koVenueInput').value.trim();
+  if(!h||!a){showToast('Ingresá ambos equipos','err');return;}
+  if(!dtLocal){showToast('Ingresá fecha y hora','err');return;}
+  const dtUTC=new Date(new Date(dtLocal).getTime()+3*3600*1000).toISOString();
+  const id=Date.now();
+  KNOCKOUT_MATCHES.push({id,round,h,a,dt:dtUTC,venue});
+  saveKnockoutMatches();
+  showToast('✅ Partido agregado: '+h+' vs '+a,'ok');
+  document.getElementById('koHomeInput').value='';
+  document.getElementById('koAwayInput').value='';
+  document.getElementById('koDtInput').value='';
+  document.getElementById('koVenueInput').value='';
+  populateKoResultSel();
+  renderKnockout();
+}
+
+function populateKoResultSel(){
+  const sel=document.getElementById('koResultMatchSel');
+  if(!sel)return;
+  sel.innerHTML='<option value="">-- Seleccioná partido --</option>';
+  KNOCKOUT_MATCHES.forEach(m=>{
+    const bid='ko_'+m.id;
+    const r=matchResults[bid]||{};
+    const hasR=r.hg!==null&&r.hg!==undefined;
+    const opt=document.createElement('option');
+    opt.value=bid;
+    opt.textContent=(KO_ROUNDS.find(x=>x.key===m.round)?.label||m.round)+': '+m.h+' vs '+m.a+(hasR?' ✅ '+r.hg+'-'+r.ag:'');
+    if(hasR)opt.style.color='#00E676';
+    sel.appendChild(opt);
+  });
+}
+
+function checkKoPenSection(){
+  const bid=document.getElementById('koResultMatchSel').value;
+  const hg=document.getElementById('koHG').value;
+  const ag=document.getElementById('koAG').value;
+  if(!bid){showToast('Seleccioná un partido','err');return;}
+  if(hg===''||ag===''){showToast('Ingresá el resultado','err');return;}
+  const isPens=parseInt(hg)===parseInt(ag);
+  const penSection=document.getElementById('koPenSection');
+  penSection.style.display=isPens?'block':'none';
+  if(isPens){
+    const m=KNOCKOUT_MATCHES.find(x=>'ko_'+x.id===bid);
+    if(m){
+      const sel=document.getElementById('koPenWinner');
+      sel.innerHTML='<option value="">-- Sin penales --</option>';
+      [m.h,m.a].forEach(t=>{const opt=document.createElement('option');opt.value=t;opt.textContent=t;sel.appendChild(opt);});
+    }
+    showToast('¡Empate! Elegí ganador en penales','ok');
+  }else{
+    showToast('Sin penales — podés guardar','ok');
+  }
+}
+
+async function saveKoResultAdmin(){
+  const bid=document.getElementById('koResultMatchSel').value;
+  const hg=document.getElementById('koHG').value;
+  const ag=document.getElementById('koAG').value;
+  const status=document.getElementById('koStatus').value;
+  const pen=document.getElementById('koPenWinner')?.value||null;
+  if(!bid){showToast('Seleccioná un partido','err');return;}
+  if(hg===''||ag===''){showToast('Ingresá el resultado','err');return;}
+  await saveKoResult(bid,parseInt(hg),parseInt(ag),status,pen||null);
+  populateKoResultSel();
+  document.getElementById('koHG').value='';
+  document.getElementById('koAG').value='';
+  document.getElementById('koPenSection').style.display='none';
+}
+
+
+// ═══════════════ KNOCKOUT SCORING ═══════════════
+// PTS same as groups: exact=5, diff=4, res=3, special for penalties
+
+function calcKoPts(bh, ba, bPen, rh, ra, rPen, wentToPens) {
+  // bh/ba = bet home/away goals, bPen = bet penalty winner (team name or null)
+  // rh/ra = real home/away goals, rPen = real penalty winner, wentToPens = bool
+  if (rh === null || rh === undefined) return 0;
+  if (bh === null || bh === undefined) return 0;
+
+  const exact = bh === rh && ba === ra;
+  const bDiff = bh - ba, rDiff = rh - ra;
+  const sameDiff = bDiff === rDiff;
+  const sameResult = Math.sign(bDiff) === Math.sign(rDiff);
+  const betDraw = bDiff === 0;
+  const realDraw = rDiff === 0;
+
+  if (!wentToPens) {
+    // Normal finish in 90min
+    if (!realDraw) {
+      if (exact) return PTS.exact;
+      if (sameDiff) return PTS.diff;
+      if (sameResult) return PTS.res;
+      return 0;
+    }
+  }
+
+  // Went to penalties
+  if (!betDraw) return 0; // Bet on a winner, but it went to pens → 0
+
+  const penCorrect = bPen && rPen && bPen === rPen;
+
+  if (exact && penCorrect) return PTS.exact;   // 5: exact score + pen winner
+  if (sameDiff && penCorrect) return PTS.diff;  // 4: same diff (0-0 exact here) + pen
+  if (exact && !penCorrect) return PTS.res;     // 3: exact score, wrong pen
+  if (!exact && penCorrect) return PTS.diff;    // 4: right empate + right pen (diff score)
+  if (!exact && !penCorrect) return 2;          // 2: right empate wrong pen
+  return 0;
+}
+
+
+// ═══════════════ KNOCKOUT MATCHES ═══════════════
+let koFilter = 'r16';
+
+function getKoMatches() {
+  return matchResults.ko || {};
+}
+
+function setKoFilter(round, btn) {
+  koFilter = round;
+  document.querySelectorAll('#koFilterBar .fbtn').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderKoMatches();
+}
+
+function renderKoMatches() {
+  const el = document.getElementById('koMatchesList');
+  if (!el) return;
+  const ko = getKoMatches();
+  const roundMatches = Object.entries(ko).filter(([k]) => k.startsWith(koFilter));
+
+  if (!roundMatches.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-ttl">SIN PARTIDOS AÚN</div><div style="font-size:12px;margin-top:4px">El admin cargará los cruces cuando se definan</div></div>';
+    return;
+  }
+
+  const bets = allBets[currentUser] || {};
+  el.innerHTML = roundMatches.sort((a,b) => a[0].localeCompare(b[0])).map(([key, m]) => {
+    const bet = bets['ko_' + key] || {};
+    const lk = m.status !== 'upcoming' || locked(m.dt || '2026-07-01T00:00:00Z');
+    const hasBet = bet.h !== undefined;
+    const hasR = m.hg !== null && m.hg !== undefined;
+    const betDraw = hasBet && bet.h === bet.a;
+    const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
+
+    const stHtml = m.status === 'live' ? '<span class="st-live">🔴 VIVO</span>'
+      : m.status === 'finished' ? '<span class="st-fin">FIN</span>'
+      : '<span class="st-up">PRÓXIMO</span>';
+
+    const scoreHtml = hasR
+      ? '<div class="off-score">' + m.hg + '-' + m.ag + (m.wentToPens ? '<div style="font-size:11px;color:var(--gold)">Penales: ' + (m.penWinner||'?') + '</div>' : '') + '</div>'
+      : '<div class="vs-txt">VS</div>';
+
+    const penBetHtml = !lk && betDraw ? '<div style="margin-top:6px"><label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label><select id="pen_' + key + '" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;"><option value="">-- Sin penales --</option><option value="' + m.h + '" ' + (bet.pen===m.h?'selected':'') + '>' + m.h + '</option><option value="' + m.a + '" ' + (bet.pen===m.a?'selected':'') + '>' + m.a + '</option></select></div>' : '';
+
+    const savedBadge = hasBet && !lk ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen?' · Pen: '+bet.pen:'') + '</div>' : '';
+    const ptsHtml = pts !== null && hasBet ? '<div class="pts-earned">+' + pts + ' pts ' + (pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'') + '</div>' : '';
+    const saveBtn = lk ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
+      : '<button class="save-btn" onclick="saveKoBet('' + key + '')">💾 GUARDAR APUESTA</button>';
+
+    return '<div class="mbc">'
+      + '<div class="mbc-head"><span class="grp-tag">' + (koFilter==='r16'?'OCTAVOS':koFilter==='qf'?'CUARTOS':koFilter==='sf'?'SEMIS':koFilter==='final'?'FINAL':'3° PUESTO') + '</span>' + stHtml + '</div>'
+      + '<div class="mbc-body">'
+      + '<div class="teams-row"><div class="t-side">' + fi(m.h,'flag-lg') + '<div class="t-name">' + m.h + '</div></div>'
+      + '<div class="score-center">' + scoreHtml + '</div>'
+      + '<div class="t-side">' + fi(m.a,'flag-lg') + '<div class="t-name">' + m.a + '</div></div></div>'
+      + '<div class="bet-lbl">Tu apuesta</div>'
+      + '<div class="bet-row"><input class="si" id="koh_' + key + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + '><span class="sd">-</span><input class="si" id="koa_' + key + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' onchange="checkKoDraw('' + key + '')"  oninput="checkKoDraw('' + key + '')">' + '</div>'
+      + penBetHtml
+      + saveBtn + savedBadge + ptsHtml
+      + '</div></div>';
+  }).join('');
+}
+
+function checkKoDraw(key) {
+  const h = document.getElementById('koh_' + key);
+  const a = document.getElementById('koa_' + key);
+  const penRow = document.getElementById('pen_' + key);
+  if (!h || !a) return;
+  // Show pen selector if draw
+  const isDraw = h.value !== '' && a.value !== '' && parseInt(h.value) === parseInt(a.value);
+  if (penRow) penRow.parentElement.style.display = isDraw ? 'block' : 'none';
+}
+
+async function saveKoBet(key) {
+  const h = document.getElementById('koh_' + key);
+  const a = document.getElementById('koa_' + key);
+  const penSel = document.getElementById('pen_' + key);
+  if (!h || !a || h.value === '' || a.value === '') { showToast('Ingresá ambos marcadores', 'err'); return; }
+  const hv = parseInt(h.value), av = parseInt(a.value);
+  const pen = (hv === av && penSel) ? penSel.value : null;
+  if (!allBets[currentUser]) allBets[currentUser] = {};
+  allBets[currentUser]['ko_' + key] = { h: hv, a: av, pen: pen || null };
+  await fbSaveBets(currentUser);
+  showToast('✅ Apuesta guardada' + (pen ? ' · Penales: ' + pen : ''), 'ok');
+  renderKoMatches();
+  updateHeader();
+}
+
+// ADMIN: Add knockout match
+function initKoAdminSelectors() {
+  const allTeams = [...ALL_TEAMS];
+  // Add teams from existing KO matches
+  const ko = getKoMatches();
+  Object.values(ko).forEach(m => {
+    if (m.h && !allTeams.includes(m.h)) allTeams.push(m.h);
+    if (m.a && !allTeams.includes(m.a)) allTeams.push(m.a);
+  });
+  allTeams.sort();
+
+  ['koHomeSel','koAwaySel'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '<option value="">-- Seleccioná --</option>';
+    allTeams.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t; opt.textContent = t;
+      sel.appendChild(opt);
+    });
+  });
+
+  // Result selector
+  const resSel = document.getElementById('koResultSel');
+  if (resSel) {
+    resSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
+    Object.entries(ko).forEach(([key, m]) => {
+      const opt = document.createElement('option');
+      opt.value = key;
+      const hasR = m.hg !== null && m.hg !== undefined;
+      opt.textContent = m.h + ' vs ' + m.a + (hasR ? ' ✅ ' + m.hg + '-' + m.ag : '');
+      if (hasR) opt.style.color = '#00E676';
+      resSel.appendChild(opt);
+    });
+    resSel.onchange = function() {
+      const key = this.value;
+      if (!key) return;
+      const m = ko[key];
+      if (!m) return;
+      document.getElementById('koHG').value = m.hg !== undefined ? m.hg : '';
+      document.getElementById('koAG').value = m.ag !== undefined ? m.ag : '';
+      // Pen winner
+      const penSel = document.getElementById('koPenWinner');
+      penSel.innerHTML = '<option value="">Sin penales</option><option value="' + m.h + '">' + m.h + '</option><option value="' + m.a + '">' + m.a + '</option>';
+      if (m.penWinner) penSel.value = m.penWinner;
+      // Show pen row if result is draw
+      const hg = parseInt(document.getElementById('koHG').value);
+      const ag = parseInt(document.getElementById('koAG').value);
+      document.getElementById('koPenRow').style.display = (hg === ag) ? 'block' : 'none';
+    };
+  }
+
+  // Show/hide pen row on result change
+  ['koHG','koAG'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.oninput = function() {
+      const hg = parseInt(document.getElementById('koHG').value||'-1');
+      const ag = parseInt(document.getElementById('koAG').value||'-1');
+      const penSel = document.getElementById('koResultSel').value;
+      if (penSel) {
+        const m = ko[penSel];
+        if (m) {
+          document.getElementById('koPenWinner').innerHTML = '<option value="">Sin penales</option><option value="' + m.h + '">' + m.h + '</option><option value="' + m.a + '">' + m.a + '</option>';
+        }
+      }
+      document.getElementById('koPenRow').style.display = (!isNaN(hg) && !isNaN(ag) && hg === ag) ? 'block' : 'none';
+    };
+  });
+}
+
+async function addKoMatch() {
+  const round = document.getElementById('koRoundSel').value;
+  const num = document.getElementById('koNumInput').value;
+  const home = document.getElementById('koHomeSel').value;
+  const away = document.getElementById('koAwaySel').value;
+  if (!home || !away) { showToast('Seleccioná ambos equipos', 'err'); return; }
+  if (home === away) { showToast('Los equipos deben ser distintos', 'err'); return; }
+  const key = round + '_' + num;
+  if (!matchResults.ko) matchResults.ko = {};
+  matchResults.ko[key] = { h: home, a: away, hg: null, ag: null, status: 'upcoming', penWinner: null, wentToPens: false };
+  await fbSaveResults();
+  showToast('✅ Cruce agregado: ' + home + ' vs ' + away, 'ok');
+  initKoAdminSelectors();
+  renderKoMatches();
+}
+
+async function saveKoResult() {
+  const key = document.getElementById('koResultSel').value;
+  const hg = document.getElementById('koHG').value;
+  const ag = document.getElementById('koAG').value;
+  const status = document.getElementById('koStatus').value;
+  const penWinner = document.getElementById('koPenWinner').value;
+  if (!key) { showToast('Seleccioná un partido', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Ingresá el resultado', 'err'); return; }
+  const hgN = parseInt(hg), agN = parseInt(ag);
+  const wentToPens = hgN === agN && penWinner !== '';
+  if (!matchResults.ko) matchResults.ko = {};
+  matchResults.ko[key] = {
+    ...matchResults.ko[key],
+    hg: hgN, ag: agN, status,
+    penWinner: wentToPens ? penWinner : null,
+    wentToPens
+  };
+  await fbSaveResults();
+  showToast('✅ Resultado guardado', 'ok');
+  initKoAdminSelectors();
+  renderKoMatches();
+  renderRanking();
+}
+
+// Update getUserScore to include KO bets
+const _origGetUserScore = getUserScore;
+getUserScore = function(u) {
+  const base = _origGetUserScore(u);
+  const bets = allBets[u] || {};
+  const ko = getKoMatches();
+  let koPts = 0;
+  Object.entries(ko).forEach(([key, m]) => {
+    const b = bets['ko_' + key];
+    if (!b || m.hg === null || m.hg === undefined) return;
+    koPts += calcKoPts(b.h, b.a, b.pen, m.hg, m.ag, m.penWinner, m.wentToPens);
+  });
+  return { ...base, pts: base.pts + koPts };
+};
+
 // ═══════════════ INIT ═══════════════
 setupPWA();
 document.addEventListener('fbReady',async()=>{
   document.getElementById('splashSub').textContent='CARGANDO DATOS...';
   await fbLoad();
+  await loadKnockoutMatches();
   fbListen();
   const saved=localStorage.getItem('pencaUser');
   setTimeout(()=>{
