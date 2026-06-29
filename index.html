@@ -2088,7 +2088,7 @@ function renderKoMatches() {
 
     const saveBtnHtml = lk
       ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
-      : '<button class="save-btn" onclick="saveKoBet('' + bid + '')">💾 GUARDAR APUESTA</button>';
+      : '<button class="save-btn" onclick="saveKoBet(\'' + bid + '\')">💾 GUARDAR APUESTA</button>';
 
     const savedBadge = hasBet && !lk
       ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
@@ -2113,9 +2113,9 @@ function renderKoMatches() {
       + '</div>'
       + '<div class="bet-lbl">Tu apuesta</div>'
       + '<div class="bet-row">'
-      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput('' + bid + '')">'
+      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput(\'' + bid + '\')">'
       + '<span class="sd">-</span>'
-      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput('' + bid + '')">'
+      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput(\'' + bid + '\')">'
       + '</div>'
       + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
       + saveBtnHtml
