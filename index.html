@@ -1568,6 +1568,7 @@ async function renderAdmin() {
   }
   // Data is loaded — populate selectors now
   initAdminSelectors();
+  initKoAdminSelectors();
   const scores = registeredUsers.map(u => ({ name: u, ...getUserScore(u) })).sort((a,b) => b.pts - a.pts);
   el.innerHTML = scores.map(u => {
     const betCount = Object.keys(allBets[u.name] || {}).filter(k => !isNaN(k)).length;
@@ -2246,6 +2247,82 @@ function autoPopulateBracket() {
   }
 
   return changed;
+}
+
+
+function initKoAdminSelectors() {
+  const resSel = document.getElementById('koResultSel');
+  if (!resSel) return;
+  const ko = matchResults.ko || {};
+
+  resSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
+
+  // Add all rounds from BRACKET
+  const rounds = [
+    {key:'r16', label:'16avos', matches: BRACKET.r16},
+    {key:'qf',  label:'Octavos', matches: BRACKET.qf},
+    {key:'sf',  label:'Cuartos', matches: BRACKET.sf},
+    {key:'sf2', label:'Semis',   matches: BRACKET.sf2},
+    {key:'third',label:'3° Puesto', matches: BRACKET.third},
+    {key:'final', label:'Final',  matches: BRACKET.final},
+  ];
+
+  rounds.forEach(function(round) {
+    round.matches.forEach(function(b) {
+      const m = ko[b.id] || {};
+      const h = m.h || b.h || 'Por definir';
+      const a = m.a || b.a || 'Por definir';
+      const hasR = m.hg !== null && m.hg !== undefined;
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = '[' + round.label + '] ' + h + ' vs ' + a + (hasR ? ' ✅ ' + m.hg + '-' + m.ag : '');
+      if (hasR) opt.style.color = '#00E676';
+      resSel.appendChild(opt);
+    });
+  });
+
+  // On change: load existing result into fields
+  resSel.onchange = function() {
+    const id = this.value;
+    if (!id) return;
+    const m = ko[id] || {};
+    document.getElementById('koHG').value = m.hg !== undefined && m.hg !== null ? m.hg : '';
+    document.getElementById('koAG').value = m.ag !== undefined && m.ag !== null ? m.ag : '';
+    // Update pen winner options
+    const penSel = document.getElementById('koPenWinner');
+    const h = m.h || 'Local';
+    const a = m.a || 'Visitante';
+    penSel.innerHTML = '<option value="">Sin penales</option>'
+      + '<option value="' + h + '">' + h + '</option>'
+      + '<option value="' + a + '">' + a + '</option>';
+    if (m.penWinner) penSel.value = m.penWinner;
+    // Show pen row if draw
+    const hg = parseInt(document.getElementById('koHG').value);
+    const ag = parseInt(document.getElementById('koAG').value);
+    document.getElementById('koPenRow').style.display = (!isNaN(hg) && !isNaN(ag) && hg === ag) ? 'block' : 'none';
+  };
+
+  // Show/hide pen row on score input
+  ['koHG','koAG'].forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.oninput = function() {
+      const hg = parseInt(document.getElementById('koHG').value || '-1');
+      const ag = parseInt(document.getElementById('koAG').value || '-1');
+      document.getElementById('koPenRow').style.display = (!isNaN(hg) && !isNaN(ag) && hg === ag && hg >= 0) ? 'block' : 'none';
+      // Update pen winner options based on selected match
+      const selId = document.getElementById('koResultSel').value;
+      if (selId) {
+        const m = (matchResults.ko || {})[selId] || {};
+        const h = m.h || 'Local';
+        const a = m.a || 'Visitante';
+        const penSel = document.getElementById('koPenWinner');
+        penSel.innerHTML = '<option value="">Sin penales</option>'
+          + '<option value="' + h + '">' + h + '</option>'
+          + '<option value="' + a + '">' + a + '</option>';
+      }
+    };
+  });
 }
 
 // ═══════════════ INIT ═══════════════
