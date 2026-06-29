@@ -2091,7 +2091,7 @@ function renderKoMatches() {
 
     const saveBtnHtml = lk
       ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
-      : '<button class="save-btn" onclick="saveKoBet(\'' + bid + '\')">💾 GUARDAR APUESTA</button>';
+      : '<button class="save-btn" data-bid="' + bid + '" onclick="saveKoBet(this.dataset.bid)">💾 GUARDAR APUESTA</button>';
 
     const savedBadge = hasBet && !lk
       ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
@@ -2367,14 +2367,13 @@ function initKoAdminSelectors() {
 function buildKoMatchCard(key, m, bets) {
   const bid = key;
   const bet = bets['ko_' + key] || {};
-  // Lock based on kickoff time - r16_1 and r16_2 always open
   const bracketEntry = BRACKET.r16.find(function(b){return b.id===bid;}) || {};
-  const kickoffDt2 = m.dt || bracketEntry.dt;
+  const kickoffDt = m.dt || bracketEntry.dt;
   let lk;
   if (bid === 'r16_1' || bid === 'r16_2') {
-    lk = false; // Always open for manual entry
-  } else if (kickoffDt2) {
-    lk = new Date() >= new Date(kickoffDt2);
+    lk = false;
+  } else if (kickoffDt) {
+    lk = new Date() >= new Date(kickoffDt);
   } else {
     lk = m.status === 'finished';
   }
@@ -2382,16 +2381,19 @@ function buildKoMatchCard(key, m, bets) {
   const hasR = m.hg !== null && m.hg !== undefined;
   const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
   const roundMap = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
-  const round = key.replace(/_\d+$/, '');
+  const round = bid.replace(/_[0-9]+$/, '');
   const roundName = roundMap[round] || round.toUpperCase();
 
   const stHtml = m.status==='finished' ? '<span class="st-fin">FIN</span>'
-    : m.status==='live' ? '<span class="st-live">\u{1F534} VIVO</span>'
+    : m.status==='live' ? '<span class="st-live">🔴 VIVO</span>'
     : '<span class="st-up">PRÓXIMO</span>';
 
   const scoreHtml = hasR
-    ? '<div class="off-score">' + m.hg + '-' + m.ag + '</div>'
+    ? '<div class="off-score">' + m.hg + '-' + m.ag + (m.wentToPens && m.penWinner ? '<div style="font-size:11px;color:var(--gold)">Pen: ' + m.penWinner + '</div>' : '') + '</div>'
     : '<div class="vs-txt">VS</div>';
+
+  const hVal = hasBet ? bet.h : '';
+  const aVal = hasBet ? bet.a : '';
 
   let penHtml = '';
   if (!lk && hasBet && bet.h === bet.a) {
@@ -2404,20 +2406,16 @@ function buildKoMatchCard(key, m, bets) {
       + '</select></div>';
   }
 
-  const hVal = bet.h !== undefined ? bet.h : '';
-  const aVal = bet.a !== undefined ? bet.a : '';
-  const disabledAttr = lk ? ' disabled' : '';
-
-  const saveBtnHtml = lk
+  const saveBtn = lk
     ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
-    : '<button class="save-btn" id="saveko_' + bid + '" onclick="saveKoBet(\''+bid+'\')">\u{1F4BE} GUARDAR APUESTA</button>';
+    : '<button class="save-btn" data-bid="' + bid + '" onclick="saveKoBet(this.dataset.bid)">💾 GUARDAR APUESTA</button>';
 
   const savedBadge = hasBet && !lk
-    ? '<div class="saved-badge">\u2705 ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
+    ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
     : '';
 
   const ptsHtml = pts !== null && hasBet
-    ? '<div class="pts-earned">+' + (pts||0) + ' pts ' + (pts===5?'\u{1F3AF}':pts===4?'\u2B50':pts>=2?'\u2705':'\u274C') + '</div>'
+    ? '<div class="pts-earned">+' + pts + ' pts ' + (pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'❌') + '</div>'
     : '';
 
   return '<div class="mbc">'
@@ -2430,15 +2428,14 @@ function buildKoMatchCard(key, m, bets) {
     + '</div>'
     + '<div class="bet-lbl">Tu apuesta</div>'
     + '<div class="bet-row">'
-    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '"' + disabledAttr + ' onchange="onKoInput(\'' + bid + '\')">'
+    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' onchange="onKoInput(this.dataset.bid)">'
     + '<span class="sd">-</span>'
-    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '"' + disabledAttr + ' onchange="onKoInput(\'' + bid + '\')">'
+    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' onchange="onKoInput(this.dataset.bid)">'
     + '</div>'
     + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
-    + saveBtnHtml + savedBadge + ptsHtml
+    + saveBtn + savedBadge + ptsHtml
     + '</div></div>';
 }
-
 function buildKoMatchesHtml() {
   autoPopulateBracket();
   const ko = matchResults.ko || {};
