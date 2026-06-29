@@ -1911,14 +1911,27 @@ function populateKoResultSel(){
   const sel=document.getElementById('koResultMatchSel');
   if(!sel)return;
   sel.innerHTML='<option value="">-- Seleccioná partido --</option>';
-  KNOCKOUT_MATCHES.forEach(m=>{
-    const bid='ko_'+m.id;
-    const r=matchResults[bid]||{};
-    const hasR=r.hg!==null&&r.hg!==undefined;
-    const opt=document.createElement('option');
-    opt.value=bid;
-    opt.textContent=(KO_ROUNDS.find(x=>x.key===m.round)?.label||m.round)+': '+m.h+' vs '+m.a+(hasR?' ✅ '+r.hg+'-'+r.ag:'');
-    if(hasR)opt.style.color='#00E676';
+  // Use BRACKET constant - always available
+  autoPopulateBracket();
+  const ko = matchResults.ko || {};
+  const roundLabels = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
+  const allBracketMatches = [
+    ...BRACKET.r16,
+    ...BRACKET.qf.map(function(b){const m=ko[b.id]||{};return{id:b.id,h:m.h||getKoWinner(b.from[0])||'Por definir',a:m.a||getKoWinner(b.from[1])||'Por definir'};}),
+    ...BRACKET.sf.map(function(b){const m=ko[b.id]||{};return{id:b.id,h:m.h||getKoWinner(b.from[0])||'Por definir',a:m.a||getKoWinner(b.from[1])||'Por definir'};}),
+    ...BRACKET.sf2.map(function(b){const m=ko[b.id]||{};return{id:b.id,h:m.h||getKoWinner(b.from[0])||'Por definir',a:m.a||getKoWinner(b.from[1])||'Por definir'};}),
+    {id:'third_1',h:getKoLoser('sf2_1')||'Por definir',a:getKoLoser('sf2_2')||'Por definir'},
+    {id:'final_1',h:getKoWinner('sf2_1')||'Por definir',a:getKoWinner('sf2_2')||'Por definir'},
+  ];
+  allBracketMatches.forEach(function(m){
+    const round = m.id.replace(/_\d+$/,'');
+    const label = roundLabels[round] || round;
+    const koM = ko[m.id] || {};
+    const hasR = koM.hg !== null && koM.hg !== undefined;
+    const opt = document.createElement('option');
+    opt.value = m.id;
+    opt.textContent = '['+label+'] '+m.h+' vs '+m.a+(hasR?' ✅ '+koM.hg+'-'+koM.ag:'');
+    if(hasR) opt.style.color='#00E676';
     sel.appendChild(opt);
   });
 }
@@ -1933,12 +1946,12 @@ function checkKoPenSection(){
   const penSection=document.getElementById('koPenSection');
   penSection.style.display=isPens?'block':'none';
   if(isPens){
-    const m=KNOCKOUT_MATCHES.find(x=>'ko_'+x.id===bid);
-    if(m){
-      const sel=document.getElementById('koPenWinner');
-      sel.innerHTML='<option value="">-- Sin penales --</option>';
-      [m.h,m.a].forEach(t=>{const opt=document.createElement('option');opt.value=t;opt.textContent=t;sel.appendChild(opt);});
-    }
+    // Get teams from matchResults.ko or BRACKET
+  const koM = (matchResults.ko||{})[bid] || {};
+  const tH = koM.h || 'Local'; const tA = koM.a || 'Visitante';
+  const penSel=document.getElementById('koPenWinner');
+  penSel.innerHTML='<option value="">-- Sin penales --</option>';
+  [tH,tA].forEach(function(t){const opt=document.createElement('option');opt.value=t;opt.textContent=t;penSel.appendChild(opt);});
     showToast('¡Empate! Elegí ganador en penales','ok');
   }else{
     showToast('Sin penales — podés guardar','ok');
@@ -1953,11 +1966,26 @@ async function saveKoResultAdmin(){
   const pen=document.getElementById('koPenWinner')?.value||null;
   if(!bid){showToast('Seleccioná un partido','err');return;}
   if(hg===''||ag===''){showToast('Ingresá el resultado','err');return;}
-  await saveKoResult(bid,parseInt(hg),parseInt(ag),status,pen||null);
+  // Save to matchResults.ko
+  if(!matchResults.ko) matchResults.ko={};
+  const existing = matchResults.ko[bid]||{};
+  const hgN=parseInt(hg), agN=parseInt(ag);
+  const wentToPens = hgN===agN && pen && pen!=='';
+  matchResults.ko[bid]={
+    ...existing,
+    hg:hgN, ag:agN, status,
+    penWinner: wentToPens?pen:null,
+    wentToPens: !!wentToPens
+  };
+  autoPopulateBracket();
+  await fbSaveResults();
+  showToast('✅ Resultado guardado','ok');
   populateKoResultSel();
+  renderAll();
   document.getElementById('koHG').value='';
   document.getElementById('koAG').value='';
-  document.getElementById('koPenSection').style.display='none';
+  const penSection=document.getElementById('koPenSection');
+  if(penSection) penSection.style.display='none';
 }
 
 
