@@ -523,36 +523,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <div id="adminResultStatus" style="text-align:center;font-size:12px;color:var(--muted);min-height:18px;"></div>
       </div>
 
-      <!-- AGREGAR PARTIDO ELIMINATORIO -->
-      <div class="sec-title" style="font-size:16px">AGREGAR PARTIDO ELIMINATORIO</div>
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <div style="flex:1">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">RONDA</label>
-            <select id="koRoundSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
-              <option value="r16">16avos de Final</option><option value="qf">Octavos de Final</option><option value="sf">Cuartos de Final</option><option value="sf2">Semis</option><option value="third">3° Puesto</option><option value="final">Final</option>
-            </select>
-          </div>
-          <div style="flex:1">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">FECHA (hora UYT)</label>
-            <input id="koDtInput" type="datetime-local" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;margin-bottom:10px;">
-          <div style="flex:1">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
-            <input id="koHomeInput" type="text" placeholder="Ej: Uruguay" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
-          </div>
-          <div style="flex:1">
-            <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
-            <input id="koAwayInput" type="text" placeholder="Ej: Brasil" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
-          </div>
-        </div>
-        <input id="koVenueInput" type="text" placeholder="Estadio (opcional)" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;margin-bottom:10px;">
-        <button onclick="addKoMatchFromAdmin()" style="width:100%;background:linear-gradient(135deg,#009A44,#007733);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">➕ AGREGAR PARTIDO</button>
-      </div>
 
-      <!-- RESULTADO ELIMINATORIO -->
       <div class="sec-title" style="font-size:16px">RESULTADO ELIMINATORIO</div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px;">
         <div style="margin-bottom:10px;">
@@ -634,11 +605,11 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <div style="display:flex;gap:8px;margin-bottom:10px;">
           <div style="flex:1">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">EQUIPO LOCAL</label>
-            <select id="koHomeSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;"></select>
+            <input id="koHomeSel" type="text" placeholder="Ej: Uruguay" list="teamsList" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
           </div>
           <div style="flex:1">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">EQUIPO VISITANTE</label>
-            <select id="koAwaySel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;"></select>
+            <input id="koAwaySel" type="text" placeholder="Ej: Brasil" list="teamsList" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
           </div>
         </div>
         <button onclick="addKoMatch()" style="width:100%;background:linear-gradient(135deg,#009A44,#007A35);color:#fff;border:none;border-radius:8px;padding:11px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;cursor:pointer;margin-bottom:8px;">➕ AGREGAR CRUCE</button>
@@ -818,8 +789,8 @@ const MATCHES=[
 // ═══════════════ KNOCKOUT MATCHES ═══════════════
 let KNOCKOUT_MATCHES = [];
 const KO_ROUNDS = [
-  { key:'r16', label:'OCTAVOS' },
-  { key:'qf',  label:'CUARTOS' },
+  { key:'r16', label:'16AVOS' },
+  { key:'qf',  label:'OCTAVOS' },
   { key:'sf',  label:'SEMIS' },
   { key:'third', label:'3er PUESTO' },
   { key:'final', label:'FINAL' },
@@ -1149,30 +1120,31 @@ function renderBracket(){
   const tbd='<span style="color:var(--muted);font-size:10px">Por definir</span>';
 
   function bMatch(t1,s1,t2,s2,done){
-    const w1=done&&s1!==null&&s2!==null&&s1>s2;
-    const w2=done&&s1!==null&&s2!==null&&s2>s1;
-    return`<div class="b-match ${done?'done':''}">
-      <div class="b-team ${w1?'winner':''}">
-        ${t1?fi(t1):''}
-        <span class="b-team-name">${t1||'Por definir'}</span>
-        <span class="b-team-score">${s1!==null&&s1!==undefined?s1:''}</span>
-      </div>
-      <div class="b-sep"></div>
-      <div class="b-team ${w2?'winner':''}">
-        ${t2?fi(t2):''}
-        <span class="b-team-name">${t2||'Por definir'}</span>
-        <span class="b-team-score">${s2!==null&&s2!==undefined?s2:''}</span>
-      </div>
-    </div>`;
+    const w1=done&&s1!==null&&s1!==undefined&&s2!==null&&s1>s2;
+    const w2=done&&s1!==null&&s1!==undefined&&s2!==null&&s2>s1;
+    return '<div class="b-match '+(done?'done':'')+'">'
+      +'<div class="b-team '+(w1?'winner':'')+'">'
+      +(t1?fi(t1,'flag-img'):'')
+      +'<span class="b-team-name">'+(t1||'Por definir')+'</span>'
+      +'<span class="b-team-score">'+(s1!==null&&s1!==undefined?s1:'')+'</span>'
+      +'</div>'
+      +'<div class="b-sep"></div>'
+      +'<div class="b-team '+(w2?'winner':'')+'">'
+      +(t2?fi(t2,'flag-img'):'')
+      +'<span class="b-team-name">'+(t2||'Por definir')+'</span>'
+      +'<span class="b-team-score">'+(s2!==null&&s2!==undefined?s2:'')+'</span>'
+      +'</div>'
+      +'</div>';
   }
 
   // R16 = 16 matches, QF = 8, SF = 4, Final = 1, 3rd = 1
   const rounds=[
-    {title:'OCTAVOS',matches:Array.from({length:16},(_,i)=>{const m=ko[`r16_${i+1}`]||{};return bMatch(m.t1,m.s1,m.t2,m.s2,m.done);})},
-    {title:'CUARTOS',matches:Array.from({length:8},(_,i)=>{const m=ko[`qf_${i+1}`]||{};return bMatch(m.t1,m.s1,m.t2,m.s2,m.done);})},
-    {title:'SEMIS',matches:Array.from({length:4},(_,i)=>{const m=ko[`sf_${i+1}`]||{};return bMatch(m.t1,m.s1,m.t2,m.s2,m.done);})},
-    {title:'3° PUESTO',matches:[()=>{const m=ko['third']||{};return bMatch(m.t1,m.s1,m.t2,m.s2,m.done);}].map(f=>f())},
-    {title:'FINAL',matches:[()=>{const m=ko['final']||{};return bMatch(m.t1,m.s1,m.t2,m.s2,m.done);}].map(f=>f())},
+    {title:'16AVOS',matches:Array.from({length:16},(_,i)=>{const m=ko['r16_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'OCTAVOS',matches:Array.from({length:8},(_,i)=>{const m=ko['qf_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'CUARTOS',matches:Array.from({length:8},(_,i)=>{const m=ko['sf_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'SEMIS',matches:Array.from({length:4},(_,i)=>{const m=ko['sf2_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'3° PUESTO',matches:[bMatch((ko['third_1']||{}).h,(ko['third_1']||{}).hg,(ko['third_1']||{}).a,(ko['third_1']||{}).ag,(ko['third_1']||{}).status==='finished')]},
+    {title:'FINAL',matches:[bMatch((ko['final_1']||{}).h,(ko['final_1']||{}).hg,(ko['final_1']||{}).a,(ko['final_1']||{}).ag,(ko['final_1']||{}).status==='finished')]},
   ];
 
   document.getElementById('bracketEl').innerHTML=rounds.map(r=>`
@@ -2195,5 +2167,6 @@ async function initApp() {
 
 document.addEventListener('DOMContentLoaded', waitForFb);
 </script>
+<datalist id="teamsList"><option value="Uruguay"><option value="España"><option value="Arabia Saudita"><option value="Cabo Verde"><option value="México"><option value="Sudáfrica"><option value="Corea del Sur"><option value="Chequia"><option value="Canadá"><option value="Bosnia-Herz."><option value="Catar"><option value="Suiza"><option value="Brasil"><option value="Marruecos"><option value="Haití"><option value="Escocia"><option value="EE.UU."><option value="Paraguay"><option value="Australia"><option value="Turquía"><option value="Alemania"><option value="Curazao"><option value="C. de Marfil"><option value="Ecuador"><option value="Países Bajos"><option value="Japón"><option value="Suecia"><option value="Túnez"><option value="Bélgica"><option value="Egipto"><option value="Irán"><option value="Nueva Zelanda"><option value="Francia"><option value="Senegal"><option value="Noruega"><option value="Irak"><option value="Argentina"><option value="Argelia"><option value="Austria"><option value="Jordania"><option value="Portugal"><option value="RD Congo"><option value="Uzbekistán"><option value="Colombia"><option value="Ghana"><option value="Panamá"><option value="Croacia"><option value="Inglaterra"></datalist>
 </body>
 </html>
