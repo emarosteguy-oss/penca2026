@@ -312,12 +312,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
     </section>
 
 
-    <section class="section" id="section-knockout">
-      <div class="sec-title">FASE ELIMINATORIA</div>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Apostá el resultado. Si apostás empate, elegí quién gana en penales.</p>
-      <div class="filter-bar" id="koRoundFilter"></div>
-      <div id="koMatchesList"></div>
-    </section>
+
 
     <section class="section" id="section-bracket">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
@@ -1144,12 +1139,12 @@ function renderBracket(){
 
   // R16 = 16 matches, QF = 8, SF = 4, Final = 1, 3rd = 1
   const rounds=[
-    {title:'16AVOS',matches:Array.from({length:16},(_,i)=>{const m=ko['r16_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
-    {title:'OCTAVOS',matches:Array.from({length:8},(_,i)=>{const m=ko['qf_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
-    {title:'CUARTOS',matches:Array.from({length:8},(_,i)=>{const m=ko['sf_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
-    {title:'SEMIS',matches:Array.from({length:4},(_,i)=>{const m=ko['sf2_'+(i+1)]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
-    {title:'3° PUESTO',matches:[bMatch((ko['third_1']||{}).h,(ko['third_1']||{}).hg,(ko['third_1']||{}).a,(ko['third_1']||{}).ag,(ko['third_1']||{}).status==='finished')]},
-    {title:'FINAL',matches:[bMatch((ko['final_1']||{}).h,(ko['final_1']||{}).hg,(ko['final_1']||{}).a,(ko['final_1']||{}).ag,(ko['final_1']||{}).status==='finished')]},
+    {title:'16AVOS (32→16)',matches:BRACKET.r16.map(function(b){const m=ko[b.id]||{};return bMatch(m.h||b.h,m.hg,m.a||b.a,m.ag,m.status==='finished');})},
+    {title:'OCTAVOS (16→8)',matches:BRACKET.qf.map(function(b){const m=ko[b.id]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'CUARTOS (8→4)',matches:BRACKET.sf.map(function(b){const m=ko[b.id]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'SEMIS (4→2)',matches:BRACKET.sf2.map(function(b){const m=ko[b.id]||{};return bMatch(m.h,m.hg,m.a,m.ag,m.status==='finished');})},
+    {title:'3° PUESTO',matches:[bMatch((ko['third_1']||{h:'Por definir'}).h,(ko['third_1']||{}).hg,(ko['third_1']||{a:'Por definir'}).a,(ko['third_1']||{}).ag,(ko['third_1']||{}).status==='finished')]},
+    {title:'FINAL 🏆',matches:[bMatch((ko['final_1']||{h:'Por definir'}).h,(ko['final_1']||{}).hg,(ko['final_1']||{a:'Por definir'}).a,(ko['final_1']||{}).ag,(ko['final_1']||{}).status==='finished')]},
   ];
 
   document.getElementById('bracketEl').innerHTML=rounds.map(r=>`
@@ -1285,7 +1280,6 @@ function showSection(name,btn){
   else if(name==='grupos') renderGroups();
   else if(name==='bracket') renderBracket();
   else if(name==='ver') renderVerBets();
-  else if(name==='knockout'){ renderKoMatches(); }
   else if(name==='knockout'){ renderKoMatches(); }
   else if(name==='reglas') {} 
   else if(name==='admin'){ renderAdmin().then(()=>{ initAdminSelectors(); populateKoResultSel(); }); }
@@ -1836,7 +1830,7 @@ async function saveKnockoutMatches(){
 
 function setKoFilter(round,btn){
   koRoundFilter=round;
-  document.querySelectorAll('#koRoundFilter .fbtn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#koFilterBar .fbtn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
   renderKoMatches();
 }
@@ -1859,10 +1853,11 @@ function onKoInput(bid){
 async function saveKoBet(bid){
   const hv=document.getElementById('koh_'+bid)?.value;
   const av=document.getElementById('koa_'+bid)?.value;
-  if(hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
+  if(hv===undefined||av===undefined||hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
   if(!allBets[currentUser])allBets[currentUser]={};
-  const existing=(allBets[currentUser][bid])||{};
-  allBets[currentUser][bid]={...existing,h:parseInt(hv),a:parseInt(av)};
+  const betKey = 'ko_' + bid;
+  const existing=(allBets[currentUser][betKey])||{};
+  allBets[currentUser][betKey]={...existing,h:parseInt(hv),a:parseInt(av)};
   await fbSaveBets(currentUser);
   showToast('✅ Apuesta guardada: '+hv+'-'+av,'ok');
   renderKoMatches();updateHeader();
