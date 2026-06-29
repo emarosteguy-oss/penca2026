@@ -280,7 +280,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <div class="sec-title" style="margin:0;flex:1">RANKING</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
           <button class="refresh-btn" id="notifBtn" onclick="setupNotifications()" style="font-size:11px;">🔔 Activar Alertas</button>
-          <button class="refresh-btn" id="refreshBtn" onclick="aiRefresh()"><span id="refreshIcon">↻</span> IA</button>
+          
         </div>
       </div>
       <div id="rankingList"></div>
@@ -1307,8 +1307,8 @@ async function doLogin(){
     document.getElementById('loginScreen').classList.remove('show');
     document.getElementById('app').classList.add('show');
     renderAll();
-    aiRefresh();
-    setInterval(aiRefresh, 3*60*1000);
+    // aiRefresh disabled - not available from GitHub Pages (CORS)
+    // setInterval(aiRefresh, 3*60*1000);
     checkAdminAccess();
     if(localStorage.getItem('pencaNotifEnabled')==='1'){
       requestNotifPermission().then(ok=>{ if(ok){ cleanOldNotifLog(); scheduleNotifications(); } });
@@ -1852,9 +1852,8 @@ function onKoInput(bid){
 }
 
 async function saveKoBet(bid){
-  if(_koRendering){console.log('saveKoBet blocked during render, bid='+bid);return;}
-  if(!bid){console.log('saveKoBet called with empty bid');return;}
-  console.log('saveKoBet called, bid='+bid, new Error().stack);
+  if(_koRendering){return;}
+  if(!bid){return;}
   const hEl=document.getElementById('koh_'+bid);
   const aEl=document.getElementById('koa_'+bid);
   if(!hEl||!aEl){showToast('Error: campo no encontrado','err');return;}
