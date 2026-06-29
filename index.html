@@ -880,7 +880,12 @@ function fbListen(){
   const db=window._db,doc=window._fbDoc,collection=window._fbCollection,onSnapshot=window._fbOnSnapshot;
   // Listen to results updates
   onSnapshot(doc(db,'penca','results'),snap=>{
-    if(snap.exists()){matchResults=snap.data()||{};renderAll();}
+    if(snap.exists()){
+      matchResults=snap.data()||{};
+      const changed = autoPopulateBracket();
+      if(changed) fbSaveResults().then(()=>renderAll());
+      else renderAll();
+    }
   });
   // Listen to all bets
   onSnapshot(collection(db,'bets'),snap=>{
@@ -2100,6 +2105,154 @@ function renderKoMatches() {
 
   el.innerHTML = html;
 }
+
+// ═══════════════ BRACKET STRUCTURE ═══════════════
+// Pre-defined bracket: who plays who based on results
+const BRACKET = {
+  // 16avos de Final (Round of 32) - pre-seeded matchups
+  r16: [
+    {id:'r16_1', h:'Sudáfrica', a:'Canadá'},
+    {id:'r16_2', h:'Brasil', a:'Japón'},
+    {id:'r16_3', h:'Alemania', a:'Paraguay'},
+    {id:'r16_4', h:'Países Bajos', a:'Marruecos'},
+    {id:'r16_5', h:'C. de Marfil', a:'Noruega'},
+    {id:'r16_6', h:'Francia', a:'Suecia'},
+    {id:'r16_7', h:'México', a:'Ecuador'},
+    {id:'r16_8', h:'Inglaterra', a:'RD Congo'},
+    {id:'r16_9', h:'Bélgica', a:'Senegal'},
+    {id:'r16_10', h:'EE.UU.', a:'Bosnia-Herz.'},
+    {id:'r16_11', h:'España', a:'Austria'},
+    {id:'r16_12', h:'Portugal', a:'Croacia'},
+    {id:'r16_13', h:'Suiza', a:'Argelia'},
+    {id:'r16_14', h:'Australia', a:'Egipto'},
+    {id:'r16_15', h:'Argentina', a:'Cabo Verde'},
+    {id:'r16_16', h:'Colombia', a:'Ghana'},
+  ],
+  // Octavos pairings: winner of r16_X vs winner of r16_Y
+  qf: [
+    {id:'qf_1', from:['r16_1','r16_3']},   // W73 vs W75 → Houston
+    {id:'qf_2', from:['r16_2','r16_5']},   // W76 vs W78 → Philly  
+    {id:'qf_3', from:['r16_4','r16_6']},   // W75 vs W77 → NY
+    {id:'qf_4', from:['r16_7','r16_8']},   // W79 vs W80 → CDMX
+    {id:'qf_5', from:['r16_9','r16_10']},  // W82 vs W81 → Seattle
+    {id:'qf_6', from:['r16_11','r16_12']}, // W84 vs W83 → Dallas
+    {id:'qf_7', from:['r16_13','r16_16']}, // W85 vs W87 → Atlanta
+    {id:'qf_8', from:['r16_15','r16_14']}, // W86 vs W88 → Vancouver
+  ],
+  // Cuartos
+  sf: [
+    {id:'sf_1', from:['qf_1','qf_2']},
+    {id:'sf_2', from:['qf_3','qf_4']},
+    {id:'sf_3', from:['qf_5','qf_6']},
+    {id:'sf_4', from:['qf_7','qf_8']},
+  ],
+  // Semis
+  sf2: [
+    {id:'sf2_1', from:['sf_1','sf_2']},
+    {id:'sf2_2', from:['sf_3','sf_4']},
+  ],
+  // 3er puesto y Final
+  third: [{id:'third_1', from:['sf2_1_loser','sf2_2_loser']}],
+  final: [{id:'final_1', from:['sf2_1','sf2_2']}],
+};
+
+// Get winner of a KO match
+function getKoWinner(matchId) {
+  const ko = matchResults.ko || {};
+  const m = ko[matchId];
+  if (!m || m.hg === null || m.hg === undefined) return null;
+  if (m.status !== 'finished') return null;
+  if (m.hg > m.ag) return m.h;
+  if (m.ag > m.hg) return m.a;
+  // Draw - went to pens
+  if (m.penWinner) return m.penWinner;
+  return null;
+}
+
+function getKoLoser(matchId) {
+  const winner = getKoWinner(matchId);
+  if (!winner) return null;
+  const ko = matchResults.ko || {};
+  const m = ko[matchId];
+  if (!m) return null;
+  return winner === m.h ? m.a : m.h;
+}
+
+// Auto-populate KO matches from bracket structure
+function autoPopulateBracket() {
+  if (!matchResults.ko) matchResults.ko = {};
+  const ko = matchResults.ko;
+  let changed = false;
+
+  // Seed r16 matches if not already there
+  BRACKET.r16.forEach(m => {
+    if (!ko[m.id]) {
+      ko[m.id] = {h: m.h, a: m.a, hg: null, ag: null, status: 'upcoming', penWinner: null, wentToPens: false};
+      changed = true;
+    }
+  });
+
+  // Auto-fill later rounds based on results
+  ['qf','sf','sf2'].forEach(round => {
+    BRACKET[round].forEach(match => {
+      const w1 = getKoWinner(match.from[0]);
+      const w2 = getKoWinner(match.from[1]);
+      const existing = ko[match.id];
+      if (w1 || w2) {
+        const newH = w1 || (existing ? existing.h : 'Por definir');
+        const newA = w2 || (existing ? existing.a : 'Por definir');
+        if (!existing || existing.h !== newH || existing.a !== newA) {
+          ko[match.id] = {
+            h: newH, a: newA,
+            hg: existing ? existing.hg : null,
+            ag: existing ? existing.ag : null,
+            status: existing ? existing.status : 'upcoming',
+            penWinner: existing ? existing.penWinner : null,
+            wentToPens: existing ? existing.wentToPens : false
+          };
+          changed = true;
+        }
+      }
+    });
+  });
+
+  // 3rd place
+  const sf2_1_loser = getKoLoser('sf2_1');
+  const sf2_2_loser = getKoLoser('sf2_2');
+  if (sf2_1_loser || sf2_2_loser) {
+    const existing = ko['third_1'];
+    ko['third_1'] = {
+      h: sf2_1_loser || 'Por definir',
+      a: sf2_2_loser || 'Por definir',
+      hg: existing ? existing.hg : null,
+      ag: existing ? existing.ag : null,
+      status: existing ? existing.status : 'upcoming',
+      penWinner: existing ? existing.penWinner : null,
+      wentToPens: existing ? existing.wentToPens : false
+    };
+    changed = true;
+  }
+
+  // Final
+  const sf2_1_winner = getKoWinner('sf2_1');
+  const sf2_2_winner = getKoWinner('sf2_2');
+  if (sf2_1_winner || sf2_2_winner) {
+    const existing = ko['final_1'];
+    ko['final_1'] = {
+      h: sf2_1_winner || 'Por definir',
+      a: sf2_2_winner || 'Por definir',
+      hg: existing ? existing.hg : null,
+      ag: existing ? existing.ag : null,
+      status: existing ? existing.status : 'upcoming',
+      penWinner: existing ? existing.penWinner : null,
+      wentToPens: existing ? existing.wentToPens : false
+    };
+    changed = true;
+  }
+
+  return changed;
+}
+
 // ═══════════════ INIT ═══════════════
 setupPWA();
 
