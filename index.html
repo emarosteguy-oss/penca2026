@@ -1852,9 +1852,11 @@ function onKoInput(bid){
 }
 
 async function saveKoBet(bid){
+  if(_koRendering){return;} // Prevent calls during render
+  if(!bid){return;}
   const hEl=document.getElementById('koh_'+bid);
   const aEl=document.getElementById('koa_'+bid);
-  if(!hEl||!aEl){showToast('Error: no se encontró el campo','err');return;}
+  if(!hEl||!aEl){showToast('Error: campo no encontrado','err');return;}
   const hv=hEl.value;
   const av=aEl.value;
   if(hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
@@ -2040,9 +2042,11 @@ function setKoFilter(round, btn) {
   renderKoMatches();
 }
 
+let _koRendering = false;
 function renderKoMatches() {
   const el = document.getElementById('koMatchesList');
   if (!el) return;
+  _koRendering = true;
   const ko = getKoMatches();
   const roundMatches = Object.entries(ko).filter(function(e){ return e[0].startsWith(koRoundFilter); });
 
@@ -2141,6 +2145,7 @@ function renderKoMatches() {
   });
 
   el.innerHTML = html;
+  setTimeout(function(){ _koRendering = false; }, 100);
 }
 
 // ═══════════════ BRACKET STRUCTURE ═══════════════
