@@ -1824,15 +1824,28 @@ function setKoFilter(round,btn){
 }
 
 function onKoInput(bid){
-  const hv=document.getElementById('koh_'+bid)?.value;
-  const av=document.getElementById('koa_'+bid)?.value;
+  if(!bid)return;
+  const hEl=document.getElementById('koh_'+bid);
+  const aEl=document.getElementById('koa_'+bid);
   const row=document.getElementById('kopenrow_'+bid);
-  if(!row)return;
-  const m=KNOCKOUT_MATCHES.find(x=>'ko_'+x.id===bid);
-  if(!m)return;
-  const b=( allBets[currentUser]||{})[bid]||{};
-  if(hv!==''&&av!==''&&parseInt(hv)===parseInt(av)){
-    row.innerHTML=`<div style="margin-top:8px"><div class="bet-lbl">¿QUIÉN GANA EN PENALES?</div><div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px"><button onclick="setPenBet('${bid}','${m.h}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.h?'var(--gold)':'var(--border)'};background:${b.pen===m.h?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.h?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.h,'flag-img')} ${m.h}</button><button onclick="setPenBet('${bid}','${m.a}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.a?'var(--gold)':'var(--border)'};background:${b.pen===m.a?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.a?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.a,'flag-img')} ${m.a}</button></div></div>`;
+  if(!hEl||!aEl||!row)return;
+  const hv=hEl.value;
+  const av=aEl.value;
+  if(hv===''||av===''){row.innerHTML='';return;}
+  if(parseInt(hv)===parseInt(av)){
+    // Draw - show penalty selector
+    const ko=(matchResults.ko||{})[bid]||{};
+    const br=BRACKET.r16.find(function(b){return b.id===bid;})||{};
+    const teamH=ko.h||br.h||'Local';
+    const teamA=ko.a||br.a||'Visitante';
+    const curBet=(allBets[currentUser]||{})['ko_'+bid]||{};
+    row.innerHTML='<div style="margin-top:6px">'
+      +'<label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
+      +'<select id="pen_'+bid+'" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
+      +'<option value="">-- Sin penales --</option>'
+      +'<option value="'+teamH+'"'+(curBet.pen===teamH?' selected':'')+'>'+teamH+'</option>'
+      +'<option value="'+teamA+'"'+(curBet.pen===teamA?' selected':'')+'>'+teamA+'</option>'
+      +'</select></div>';
   } else {
     row.innerHTML='';
   }
@@ -2116,9 +2129,9 @@ function renderKoMatches() {
       + '</div>'
       + '<div class="bet-lbl">Tu apuesta</div>'
       + '<div class="bet-row">'
-      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput(\'' + bid + '\')">'
+      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" onchange="onKoInput(this.dataset.bid)">'
       + '<span class="sd">-</span>'
-      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput(\'' + bid + '\')">'
+      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" onchange="onKoInput(this.dataset.bid)">'
       + '</div>'
       + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
       + saveBtnHtml
