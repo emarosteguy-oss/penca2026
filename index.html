@@ -1852,8 +1852,9 @@ function onKoInput(bid){
 }
 
 async function saveKoBet(bid){
-  if(_koRendering){return;} // Prevent calls during render
-  if(!bid){return;}
+  if(_koRendering){console.log('saveKoBet blocked during render, bid='+bid);return;}
+  if(!bid){console.log('saveKoBet called with empty bid');return;}
+  console.log('saveKoBet called, bid='+bid, new Error().stack);
   const hEl=document.getElementById('koh_'+bid);
   const aEl=document.getElementById('koa_'+bid);
   if(!hEl||!aEl){showToast('Error: campo no encontrado','err');return;}
