@@ -1146,7 +1146,7 @@ function renderVerBets(){
     const roundLabels = {r16:'16AVOS', qf:'OCTAVOS', sf:'CUARTOS', sf2:'SEMIS', third:'3° PUESTO', final:'FINAL'};
     const koEntries = Object.entries(ko).filter(function(e){
       const m = e[1];
-      return m.h && m.h !== 'Por definir';
+      return m.h && m.h !== 'Por definir' && m.a && m.a !== 'Por definir';
     });
     if (koEntries.length) {
       let koHtml = '<div class="sec-title" style="margin-top:20px;font-size:18px">FASE ELIMINATORIA</div>';
@@ -2108,7 +2108,7 @@ function renderKoMatches() {
   const el = document.getElementById('koMatchesList');
   if (!el) return;
   const ko = getKoMatches();
-  const roundMatches = Object.entries(ko).filter(function(e){ return e[0].startsWith(koRoundFilter); });
+  const roundMatches = Object.entries(ko).filter(function(e){ return e[0].startsWith(koRoundFilter) && e[1].h && e[1].h !== 'Por definir' && e[1].a && e[1].a !== 'Por definir'; });
 
   if (!roundMatches.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-ttl">SIN PARTIDOS AÚN</div><div style="font-size:12px;margin-top:4px">El admin cargará los cruces cuando se definan</div></div>';
@@ -2117,6 +2117,7 @@ function renderKoMatches() {
 
   const bets = allBets[currentUser] || {};
   const roundName = koRoundFilter==='r16'?'16AVOS':koRoundFilter==='qf'?'OCTAVOS':koRoundFilter==='sf'?'CUARTOS':koRoundFilter==='sf2'?'SEMIS':koRoundFilter==='third'?'3° PUESTO':'FINAL';
+  const roundColor = koRoundFilter==='r16'?'rgba(200,16,46,.7)':koRoundFilter==='qf'?'rgba(0,61,165,.7)':koRoundFilter==='sf'?'rgba(0,150,100,.7)':koRoundFilter==='sf2'?'rgba(150,50,200,.7)':koRoundFilter==='third'?'rgba(100,100,100,.7)':'rgba(201,168,76,.9)';
 
   let html = '';
   roundMatches.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
@@ -2468,9 +2469,11 @@ function buildKoMatchCard(key, m, bets) {
   const hasBet = bet.h !== undefined;
   const hasR = m.hg !== null && m.hg !== undefined;
   const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
-  const roundMap = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
+  const roundMap = {r16:'16AVOS', qf:'OCTAVOS', sf:'CUARTOS', sf2:'SEMIS', third:'3° PUESTO', final:'FINAL'};
+  const roundColors = {r16:'rgba(200,16,46,.7)', qf:'rgba(0,61,165,.7)', sf:'rgba(0,150,100,.7)', sf2:'rgba(150,50,200,.7)', third:'rgba(100,100,100,.7)', final:'rgba(201,168,76,.9)'};
   const round = bid.replace(/_[0-9]+$/, '');
   const roundName = roundMap[round] || round.toUpperCase();
+  const roundColor = roundColors[round] || 'rgba(200,16,46,.7)';
 
   const stHtml = m.status==='finished' ? '<span class="st-fin">FIN</span>'
     : m.status==='live' ? '<span class="st-live">🔴 VIVO</span>'
@@ -2507,7 +2510,7 @@ function buildKoMatchCard(key, m, bets) {
     : '';
 
   return '<div class="mbc">'
-    + '<div class="mbc-head"><span class="grp-tag">' + roundName + '</span>' + stHtml + '</div>'
+    + '<div class="mbc-head"><span class="grp-tag" style="background:' + roundColor + '">' + roundName + '</span>' + stHtml + '</div>'
     + '<div class="mbc-body">'
     + '<div class="teams-row">'
     + '<div class="t-side">' + fi(m.h,'flag-lg') + '<div class="t-name">' + m.h + '</div></div>'
@@ -2528,7 +2531,7 @@ function buildKoMatchesHtml() {
   autoPopulateBracket();
   const ko = matchResults.ko || {};
   const bets = allBets[currentUser] || {};
-  const entries = Object.entries(ko).filter(function(e){ return e[1].h && e[1].h !== 'Por definir'; });
+  const entries = Object.entries(ko).filter(function(e){ return e[1].h && e[1].h !== 'Por definir' && e[1].a && e[1].a !== 'Por definir'; });
   if (!entries.length) return '';
   let html = '<div class="sec-title" style="margin-top:20px;font-size:18px">FASE ELIMINATORIA</div>';
   entries.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
