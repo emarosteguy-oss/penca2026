@@ -2241,28 +2241,31 @@ const BRACKET = {
     {id:'r16_15', h:'Argentina', a:'Cabo Verde',     dt:'2026-07-03T22:00:00Z'}, // 19:00 UYT Jul3
     {id:'r16_16', h:'Colombia',  a:'Ghana',          dt:'2026-07-04T01:30:00Z'}, // 22:30 UYT Jul3
   ],
-  // Octavos pairings: winner of r16_X vs winner of r16_Y
+  // Octavos pairings (Round of 16) - official FIFA bracket
+  // Match numbers: 73=r16_1, 74=r16_3, 75=r16_4, 76=r16_2, 77=r16_6, 78=r16_5, 79=r16_7, 80=r16_8
+  // 81=r16_10, 82=r16_9, 83=r16_12, 84=r16_11, 85=r16_13, 86=r16_15, 87=r16_16, 88=r16_14
   qf: [
-    {id:'qf_1', from:['r16_1','r16_3']},   // W73 vs W75 → Houston
-    {id:'qf_2', from:['r16_2','r16_5']},   // W76 vs W78 → Philly  
-    {id:'qf_3', from:['r16_4','r16_6']},   // W75 vs W77 → NY
-    {id:'qf_4', from:['r16_7','r16_8']},   // W79 vs W80 → CDMX
-    {id:'qf_5', from:['r16_9','r16_10']},  // W82 vs W81 → Seattle
-    {id:'qf_6', from:['r16_11','r16_12']}, // W84 vs W83 → Dallas
-    {id:'qf_7', from:['r16_13','r16_16']}, // W85 vs W87 → Atlanta
-    {id:'qf_8', from:['r16_15','r16_14']}, // W86 vs W88 → Vancouver
+    {id:'qf_1', from:['r16_1','r16_4']},   // W73 vs W75: Canadá vs W(Países Bajos/Marruecos)
+    {id:'qf_2', from:['r16_3','r16_6']},   // W74 vs W77: Paraguay vs W(Francia/Suecia)
+    {id:'qf_3', from:['r16_2','r16_5']},   // W76 vs W78: Brasil vs W(C.Marfil/Noruega)
+    {id:'qf_4', from:['r16_7','r16_8']},   // W79 vs W80: W(México/Ecuador) vs W(Inglaterra/RD Congo)
+    {id:'qf_5', from:['r16_10','r16_9']},  // W81 vs W82: W(EE.UU./Bosnia) vs W(Bélgica/Senegal)
+    {id:'qf_6', from:['r16_12','r16_11']}, // W83 vs W84: W(Portugal/Croacia) vs W(España/Austria)
+    {id:'qf_7', from:['r16_13','r16_16']}, // W85 vs W87: W(Suiza/Argelia) vs W(Colombia/Ghana)
+    {id:'qf_8', from:['r16_15','r16_14']}, // W86 vs W88: W(Argentina/Cabo Verde) vs W(Australia/Egipto)
   ],
-  // Cuartos
+  // Cuartos de final (Quarterfinals) - official pairings
+  // M97=W89vsW90, M98=W93vsW94, M99=W91vsW92, M100=W95vsW96
   sf: [
-    {id:'sf_1', from:['qf_1','qf_2']},
-    {id:'sf_2', from:['qf_3','qf_4']},
-    {id:'sf_3', from:['qf_5','qf_6']},
-    {id:'sf_4', from:['qf_7','qf_8']},
+    {id:'sf_1', from:['qf_1','qf_2']},   // M97: W(M89) vs W(M90)
+    {id:'sf_2', from:['qf_3','qf_4']},   // M99: W(M91) vs W(M92)
+    {id:'sf_3', from:['qf_5','qf_6']},   // M98: W(M93) vs W(M94)
+    {id:'sf_4', from:['qf_7','qf_8']},   // M100: W(M95) vs W(M96)
   ],
-  // Semis
+  // Semis - official: M101=W(sf_1)vsW(sf_3), M102=W(sf_2)vsW(sf_4)
   sf2: [
-    {id:'sf2_1', from:['sf_1','sf_2']},
-    {id:'sf2_2', from:['sf_3','sf_4']},
+    {id:'sf2_1', from:['sf_1','sf_3']},   // M101: W97 vs W98
+    {id:'sf2_2', from:['sf_2','sf_4']},   // M102: W99 vs W100
   ],
   // 3er puesto y Final
   third: [{id:'third_1', from:['sf2_1_loser','sf2_2_loser']}],
