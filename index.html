@@ -271,7 +271,6 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
       <button class="nav-tab" onclick="showSection('ver',this)">👁 Ver Todos</button>
       <button class="nav-tab" onclick="showSection('reglas',this)">📋 Reglas</button>
       <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
-      <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
     </div>
   </nav>
   <div class="main">
@@ -528,12 +527,12 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
         <div style="display:flex;gap:8px;margin-bottom:10px;align-items:flex-end;">
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">LOCAL</label>
-            <input id="koAdminHG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;" oninput="onKoScoreInput()">
+            <input id="koAdminHG" type="number" min="0" max="20" value="" placeholder="-" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;" oninput="onKoScoreInput()">
           </div>
           <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--muted);padding-bottom:10px">-</div>
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">VISITANTE</label>
-            <input id="koAdminAG" type="number" min="0" max="20" placeholder="0" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;" oninput="onKoScoreInput()">
+            <input id="koAdminAG" type="number" min="0" max="20" value="" placeholder="-" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;" oninput="onKoScoreInput()">
           </div>
           <div style="flex:1;text-align:center;">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">ESTADO</label>
@@ -1690,24 +1689,61 @@ function onEditUserChange() {
   matchSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
   if (!user) return;
   const bets = allBets[user] || {};
-  MATCHES.forEach(m => {
+
+  // Group stage matches
+  const grpGroup = document.createElement('optgroup');
+  grpGroup.label = '── FASE DE GRUPOS ──';
+  matchSel.appendChild(grpGroup);
+  MATCHES.forEach(function(m) {
     const b = bets[m.id];
     const hasBet = b && b.h !== undefined;
     const opt = document.createElement('option');
-    opt.value = m.id;
-    opt.textContent = 'Gr.' + m.g + ' ' + m.h + ' vs ' + m.a + (hasBet ? ' (apostó: ' + b.h + '-' + b.a + ')' : '');
+    opt.value = 'g_' + m.id;
+    opt.textContent = 'Gr.' + m.g + ' ' + m.h + ' vs ' + m.a + (hasBet ? ' (' + b.h + '-' + b.a + ')' : '');
     if (hasBet) opt.style.color = '#E8C96A';
-    matchSel.appendChild(opt);
+    grpGroup.appendChild(opt);
   });
+
+  // KO matches
+  autoPopulateBracket();
+  const ko = matchResults.ko || {};
+  const koEntries = Object.entries(ko).filter(function(e){ return e[1].h && e[1].h !== 'Por definir'; });
+  if (koEntries.length > 0) {
+    const koGroup = document.createElement('optgroup');
+    koGroup.label = '── FASE ELIMINATORIA ──';
+    matchSel.appendChild(koGroup);
+    const roundLabels = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
+    koEntries.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
+      const key = entry[0]; const m = entry[1];
+      const round = key.replace(/_\d+$/, '');
+      const label = roundLabels[round] || round;
+      const b = bets['ko_' + key];
+      const hasBet = b && b.h !== undefined;
+      const opt = document.createElement('option');
+      opt.value = 'ko_' + key;
+      opt.textContent = '[' + label + '] ' + m.h + ' vs ' + m.a + (hasBet ? ' (' + b.h + '-' + b.a + ')' : '');
+      if (hasBet) opt.style.color = '#E8C96A';
+      koGroup.appendChild(opt);
+    });
+  }
+
   document.getElementById('editHG').value = '';
   document.getElementById('editAG').value = '';
 }
 
 function onEditMatchChange() {
   const user = document.getElementById('editUserSel').value;
-  const mid = parseInt(document.getElementById('editMatchSel').value);
-  if (!user || !mid) return;
-  const bet = (allBets[user] || {})[mid];
+  const val = document.getElementById('editMatchSel').value;
+  if (!user || !val) return;
+
+  let bet;
+  if (val.startsWith('ko_')) {
+    bet = (allBets[user] || {})[val]; // key is 'ko_r16_1' etc
+  } else {
+    const mid = parseInt(val.replace('g_', ''));
+    bet = (allBets[user] || {})[mid];
+  }
+
   if (bet && bet.h !== undefined) {
     document.getElementById('editHG').value = bet.h;
     document.getElementById('editAG').value = bet.a;
@@ -1737,14 +1773,23 @@ async function saveAdminResult() {
 
 async function saveEditedBet() {
   const user = document.getElementById('editUserSel').value;
-  const mid = parseInt(document.getElementById('editMatchSel').value);
+  const val = document.getElementById('editMatchSel').value;
   const hg = document.getElementById('editHG').value;
   const ag = document.getElementById('editAG').value;
   if (!user) { showToast('Seleccioná un jugador', 'err'); return; }
-  if (!mid) { showToast('Seleccioná un partido', 'err'); return; }
+  if (!val) { showToast('Seleccioná un partido', 'err'); return; }
   if (hg === '' || ag === '') { showToast('Ingresá ambos goles', 'err'); return; }
   if (!allBets[user]) allBets[user] = {};
-  allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
+
+  if (val.startsWith('ko_')) {
+    // KO bet - key is already 'ko_r16_1' format
+    allBets[user][val] = { h: parseInt(hg), a: parseInt(ag) };
+  } else {
+    // Group bet
+    const mid = parseInt(val.replace('g_', ''));
+    allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
+  }
+
   await fbSaveBets(user);
   showToast('✅ Apuesta de ' + user + ' corregida: ' + hg + '-' + ag, 'ok');
   renderAll();
@@ -2002,10 +2047,14 @@ function renderKoMatches() {
     const m = entry[1];
     const bid = key;
     const bet = bets['ko_' + key] || {};
-    // Lock based on kickoff time for r16, status for later rounds
+    // Lock based on kickoff time - r16_1 and r16_2 always open for admin
+    const bracketM = BRACKET.r16.find(function(b){return b.id===key;}) || {};
+    const kickoffDt = m.dt || bracketM.dt;
     let lk;
-    if (m.dt) {
-      lk = new Date() >= new Date(m.dt) && key !== 'r16_1' && key !== 'r16_2';
+    if (key === 'r16_1' || key === 'r16_2') {
+      lk = false; // Always open for manual entry
+    } else if (kickoffDt) {
+      lk = new Date() >= new Date(kickoffDt);
     } else {
       lk = m.status === 'finished';
     }
@@ -2318,15 +2367,16 @@ function initKoAdminSelectors() {
 function buildKoMatchCard(key, m, bets) {
   const bid = key;
   const bet = bets['ko_' + key] || {};
-  // Lock based on kickoff time
-  const koEntry = (matchResults.ko||{})[bid] || {};
+  // Lock based on kickoff time - r16_1 and r16_2 always open
   const bracketEntry = BRACKET.r16.find(function(b){return b.id===bid;}) || {};
-  const kickoff = koEntry.dt || bracketEntry.dt;
+  const kickoffDt2 = m.dt || bracketEntry.dt;
   let lk;
-  if (kickoff) {
-    lk = new Date() >= new Date(kickoff) && bid !== 'r16_1' && bid !== 'r16_2';
+  if (bid === 'r16_1' || bid === 'r16_2') {
+    lk = false; // Always open for manual entry
+  } else if (kickoffDt2) {
+    lk = new Date() >= new Date(kickoffDt2);
   } else {
-    lk = koEntry.status === 'finished';
+    lk = m.status === 'finished';
   }
   const hasBet = bet.h !== undefined;
   const hasR = m.hg !== null && m.hg !== undefined;
@@ -2472,7 +2522,7 @@ async function saveKoAdminResult() {
   const status = document.getElementById('koAdminStatus').value;
   const pen = document.getElementById('koAdminPenWinner').value;
   if (!id) { showToast('Seleccioná un partido', 'err'); return; }
-  if (hg === '' || ag === '') { showToast('Ingresá el resultado', 'err'); return; }
+  if (hg === '' || ag === '') { showToast('Escribí el marcador (puede ser 0-0)', 'err'); return; }
   const hgN = parseInt(hg), agN = parseInt(ag);
   const wentToPens = hgN === agN && pen !== '';
   if (!matchResults.ko) matchResults.ko = {};
