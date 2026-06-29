@@ -264,13 +264,13 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
     <div class="nav-inner">
       <button class="nav-tab active" onclick="showSection('ranking',this)">🏆 Ranking</button>
       <button class="nav-tab" onclick="showSection('apuestas',this)">⚽ Mis Apuestas</button>
+      <button class="nav-tab" onclick="showSection('knockout',this)">⚔️ Eliminatorias</button>
       <button class="nav-tab" onclick="showSection('campeones',this)">🥇 Campeón</button>
       <button class="nav-tab" onclick="showSection('grupos',this)">📊 Grupos</button>
-      <button class="nav-tab" onclick="showSection('knockout',this)">⚔️ Eliminación</button>
       <button class="nav-tab" onclick="showSection('bracket',this)">🗺 Cuadro</button>
       <button class="nav-tab" onclick="showSection('ver',this)">👁 Ver Todos</button>
       <button class="nav-tab" onclick="showSection('reglas',this)">📋 Reglas</button>
-      <button class="nav-tab" onclick="showSection('knockout',this)">🏆 Eliminatorias</button>
+      <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
       <button class="nav-tab" id="adminTab" style="display:none" onclick="showSection('admin',this)">🔧 Admin</button>
     </div>
   </nav>
@@ -980,7 +980,72 @@ function renderMyBets(){
   if(betFilter==='upcoming')ms=MATCHES.filter(m=>!locked(m.dt));
   else if(betFilter==='uru')ms=MATCHES.filter(m=>m.uru);
   else if(betFilter==='fin')ms=MATCHES.filter(m=>{const r=matchResults[m.id];return r&&r.status==='finished';});
-  if(!ms.length){el.innerHTML='<div class="empty"><div class="empty-icon">⚽</div><div class="empty-ttl">SIN PARTIDOS</div></div>';return;}
+  if(!ms.length && betFilter !== 'all' && betFilter !== 'upcoming'){
+    el.innerHTML='<div class="empty"><div class="empty-icon">⚽</div><div class="empty-ttl">SIN PARTIDOS</div></div>';return;
+  }
+  
+  // Add KO matches to bet list
+  let koMatchesHtml = '';
+  if (betFilter === 'all' || betFilter === 'upcoming') {
+    const ko = matchResults.ko || {};
+    autoPopulateBracket();
+    const allKo = matchResults.ko || {};
+    const koEntries = Object.entries(allKo);
+    if (koEntries.length > 0) {
+      const bets = allBets[currentUser] || {};
+      const roundLabel = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
+      koMatchesHtml = '<div class="sec-title" style="margin-top:20px;font-size:18px">FASE ELIMINATORIA</div>';
+      koEntries.sort((a,b)=>a[0].localeCompare(b[0])).forEach(function(entry) {
+        const key = entry[0]; const m = entry[1];
+        if (!m.h || m.h === 'Por definir') return;
+        const bid = key;
+        const bet = bets['ko_' + key] || {};
+        const lk = m.status !== 'upcoming';
+        const hasBet = bet.h !== undefined;
+        const hasR = m.hg !== null && m.hg !== undefined;
+        const pts = hasR ? calcKoPts(bet.h,bet.a,bet.pen,m.hg,m.ag,m.penWinner,m.wentToPens) : null;
+        const round = key.replace(/_\d+$/,'');
+        const roundName = roundLabel[round] || round.toUpperCase();
+        const stHtml = m.status==='finished'?'<span class="st-fin">FIN</span>':m.status==='live'?'<span class="st-live">🔴 VIVO</span>':'<span class="st-up">PRÓXIMO</span>';
+        const scoreHtml = hasR ? '<div class="off-score">'+m.hg+'-'+m.ag+'</div>' : '<div class="vs-txt">VS</div>';
+        let penHtml = '';
+        const betDraw = hasBet && bet.h === bet.a;
+        if (!lk && betDraw) {
+          penHtml = '<div style="margin-top:6px"><label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
+            +'<select id="pen_'+bid+'" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
+            +'<option value="">-- Sin penales --</option>'
+            +'<option value="'+m.h+'"'+(bet.pen===m.h?' selected':'')+'>'+m.h+'</option>'
+            +'<option value="'+m.a+'"'+(bet.pen===m.a?' selected':'')+'>'+m.a+'</option>'
+            +'</select></div>';
+        }
+        const saveBtnHtml = lk
+          ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
+          : '<button class="save-btn" onclick="saveKoBet(''+bid+'')">💾 GUARDAR APUESTA</button>';
+        const savedBadge = hasBet&&!lk ? '<div class="saved-badge">✅ '+bet.h+'-'+bet.a+(bet.pen?' · Pen: '+bet.pen:'')+'</div>' : '';
+        const ptsHtml = pts!==null&&hasBet ? '<div class="pts-earned">+'+(pts||0)+' pts '+(pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'❌')+'</div>' : '';
+        koMatchesHtml += '<div class="mbc">'
+          +'<div class="mbc-head"><span class="grp-tag">'+roundName+'</span>'+stHtml+'</div>'
+          +'<div class="mbc-body">'
+          +'<div class="teams-row"><div class="t-side">'+fi(m.h,'flag-lg')+'<div class="t-name">'+m.h+'</div></div>'
+          +'<div class="score-center">'+scoreHtml+'</div>'
+          +'<div class="t-side">'+fi(m.a,'flag-lg')+'<div class="t-name">'+m.a+'</div></div></div>'
+          +'<div class="bet-lbl">Tu apuesta</div>'
+          +'<div class="bet-row">'
+          +'<input class="si" id="koh_'+bid+'" type="number" min="0" max="20" placeholder="-" value="'+(bet.h!==undefined?bet.h:'')+'" '+(lk?'disabled':'')+' oninput="onKoInput(''+bid+'')">'
+          +'<span class="sd">-</span>'
+          +'<input class="si" id="koa_'+bid+'" type="number" min="0" max="20" placeholder="-" value="'+(bet.a!==undefined?bet.a:'')+'" '+(lk?'disabled':'')+' oninput="onKoInput(''+bid+'')">'
+          +'</div>'
+          +'<div id="kopenrow_'+bid+'">'+penHtml+'</div>'
+          +saveBtnHtml+savedBadge+ptsHtml
+          +'</div></div>';
+      });
+    }
+  }
+
+  if(!ms.length){
+    el.innerHTML = koMatchesHtml || '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-ttl">SIN PARTIDOS</div></div>';
+    return;
+  }
   el.innerHTML=ms.map(m=>{
     const r=matchResults[m.id]||{};
     const bet=bets[m.id]||{};
@@ -1020,7 +1085,7 @@ function renderMyBets(){
         <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:5px">📍 ${m.v}</div>
       </div>
     </div>`;
-  }).join('');
+  }).join('') + koMatchesHtml;
 }
 
 async function saveBet(mid){
@@ -2253,34 +2318,42 @@ function autoPopulateBracket() {
 function initKoAdminSelectors() {
   const resSel = document.getElementById('koResultSel');
   if (!resSel) return;
-  // Ensure bracket is populated
-  autoPopulateBracket();
   const ko = matchResults.ko || {};
 
   resSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
 
-  // Add all rounds from BRACKET
-  const rounds = [
-    {key:'r16', label:'16avos', matches: BRACKET.r16},
-    {key:'qf',  label:'Octavos', matches: BRACKET.qf},
-    {key:'sf',  label:'Cuartos', matches: BRACKET.sf},
-    {key:'sf2', label:'Semis',   matches: BRACKET.sf2},
-    {key:'third',label:'3° Puesto', matches: BRACKET.third},
-    {key:'final', label:'Final',  matches: BRACKET.final},
+  // Build directly from BRACKET - no dependency on matchResults.ko being populated
+  const allMatches = [
+    // 16avos
+    ...BRACKET.r16.map(function(b){ return {id:b.id, label:'16avos', h:b.h, a:b.a}; }),
+    // Octavos - use ko data if available, else "Por definir"
+    ...BRACKET.qf.map(function(b){
+      const m=ko[b.id]||{};
+      const w1=getKoWinner(b.from[0]); const w2=getKoWinner(b.from[1]);
+      return {id:b.id, label:'Octavos', h:m.h||w1||'Por definir', a:m.a||w2||'Por definir'};
+    }),
+    ...BRACKET.sf.map(function(b){
+      const m=ko[b.id]||{};
+      const w1=getKoWinner(b.from[0]); const w2=getKoWinner(b.from[1]);
+      return {id:b.id, label:'Cuartos', h:m.h||w1||'Por definir', a:m.a||w2||'Por definir'};
+    }),
+    ...BRACKET.sf2.map(function(b){
+      const m=ko[b.id]||{};
+      const w1=getKoWinner(b.from[0]); const w2=getKoWinner(b.from[1]);
+      return {id:b.id, label:'Semis', h:m.h||w1||'Por definir', a:m.a||w2||'Por definir'};
+    }),
+    [{id:'third_1', label:'3° Puesto', h:getKoLoser('sf2_1')||'Por definir', a:getKoLoser('sf2_2')||'Por definir'}][0],
+    [{id:'final_1', label:'Final', h:getKoWinner('sf2_1')||'Por definir', a:getKoWinner('sf2_2')||'Por definir'}][0],
   ];
 
-  rounds.forEach(function(round) {
-    round.matches.forEach(function(b) {
-      const m = ko[b.id] || {};
-      const h = m.h || b.h || 'Por definir';
-      const a = m.a || b.a || 'Por definir';
-      const hasR = m.hg !== null && m.hg !== undefined;
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = '[' + round.label + '] ' + h + ' vs ' + a + (hasR ? ' ✅ ' + m.hg + '-' + m.ag : '');
-      if (hasR) opt.style.color = '#00E676';
-      resSel.appendChild(opt);
-    });
+  allMatches.forEach(function(match) {
+    const m = ko[match.id] || {};
+    const hasR = m.hg !== null && m.hg !== undefined;
+    const opt = document.createElement('option');
+    opt.value = match.id;
+    opt.textContent = '[' + match.label + '] ' + match.h + ' vs ' + match.a + (hasR ? ' ✅ ' + m.hg + '-' + m.ag : '');
+    if (hasR) opt.style.color = '#00E676';
+    resSel.appendChild(opt);
   });
 
   // On change: load existing result into fields
