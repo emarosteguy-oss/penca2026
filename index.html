@@ -985,68 +985,9 @@ function renderMyBets(){
   }
   
   // Add KO matches to bet list
-  let koMatchesHtml = '';
-  if (betFilter === 'all' || betFilter === 'upcoming') {
-    const ko = matchResults.ko || {};
-    autoPopulateBracket();
-    const allKo = matchResults.ko || {};
-    const koEntries = Object.entries(allKo);
-    if (koEntries.length > 0) {
-      const bets = allBets[currentUser] || {};
-      const roundLabel = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
-      koMatchesHtml = '<div class="sec-title" style="margin-top:20px;font-size:18px">FASE ELIMINATORIA</div>';
-      koEntries.sort((a,b)=>a[0].localeCompare(b[0])).forEach(function(entry) {
-        const key = entry[0]; const m = entry[1];
-        if (!m.h || m.h === 'Por definir') return;
-        const bid = key;
-        const bet = bets['ko_' + key] || {};
-        const lk = m.status !== 'upcoming';
-        const hasBet = bet.h !== undefined;
-        const hasR = m.hg !== null && m.hg !== undefined;
-        const pts = hasR ? calcKoPts(bet.h,bet.a,bet.pen,m.hg,m.ag,m.penWinner,m.wentToPens) : null;
-        const round = key.replace(/_\d+$/,'');
-        const roundName = roundLabel[round] || round.toUpperCase();
-        const stHtml = m.status==='finished'?'<span class="st-fin">FIN</span>':m.status==='live'?'<span class="st-live">🔴 VIVO</span>':'<span class="st-up">PRÓXIMO</span>';
-        const scoreHtml = hasR ? '<div class="off-score">'+m.hg+'-'+m.ag+'</div>' : '<div class="vs-txt">VS</div>';
-        let penHtml = '';
-        const betDraw = hasBet && bet.h === bet.a;
-        if (!lk && betDraw) {
-          penHtml = '<div style="margin-top:6px"><label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
-            +'<select id="pen_'+bid+'" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
-            +'<option value="">-- Sin penales --</option>'
-            +'<option value="'+m.h+'"'+(bet.pen===m.h?' selected':'')+'>'+m.h+'</option>'
-            +'<option value="'+m.a+'"'+(bet.pen===m.a?' selected':'')+'>'+m.a+'</option>'
-            +'</select></div>';
-        }
-        const saveBtnHtml = lk
-          ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
-          : '<button class="save-btn" onclick="saveKoBet(''+bid+'')">💾 GUARDAR APUESTA</button>';
-        const savedBadge = hasBet&&!lk ? '<div class="saved-badge">✅ '+bet.h+'-'+bet.a+(bet.pen?' · Pen: '+bet.pen:'')+'</div>' : '';
-        const ptsHtml = pts!==null&&hasBet ? '<div class="pts-earned">+'+(pts||0)+' pts '+(pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'❌')+'</div>' : '';
-        koMatchesHtml += '<div class="mbc">'
-          +'<div class="mbc-head"><span class="grp-tag">'+roundName+'</span>'+stHtml+'</div>'
-          +'<div class="mbc-body">'
-          +'<div class="teams-row"><div class="t-side">'+fi(m.h,'flag-lg')+'<div class="t-name">'+m.h+'</div></div>'
-          +'<div class="score-center">'+scoreHtml+'</div>'
-          +'<div class="t-side">'+fi(m.a,'flag-lg')+'<div class="t-name">'+m.a+'</div></div></div>'
-          +'<div class="bet-lbl">Tu apuesta</div>'
-          +'<div class="bet-row">'
-          +'<input class="si" id="koh_'+bid+'" type="number" min="0" max="20" placeholder="-" value="'+(bet.h!==undefined?bet.h:'')+'" '+(lk?'disabled':'')+' oninput="onKoInput(''+bid+'')">'
-          +'<span class="sd">-</span>'
-          +'<input class="si" id="koa_'+bid+'" type="number" min="0" max="20" placeholder="-" value="'+(bet.a!==undefined?bet.a:'')+'" '+(lk?'disabled':'')+' oninput="onKoInput(''+bid+'')">'
-          +'</div>'
-          +'<div id="kopenrow_'+bid+'">'+penHtml+'</div>'
-          +saveBtnHtml+savedBadge+ptsHtml
-          +'</div></div>';
-      });
-    }
-  }
+  const koMatchesHtml = buildKoMatchesHtml();
 
-  if(!ms.length){
-    el.innerHTML = koMatchesHtml || '<div class="empty"><div class="empty-icon">⚽</div><div class="empty-ttl">SIN PARTIDOS</div></div>';
-    return;
-  }
-  el.innerHTML=ms.map(m=>{
+    el.innerHTML=ms.map(m=>{
     const r=matchResults[m.id]||{};
     const bet=bets[m.id]||{};
     const lk=locked(m.dt);
@@ -2398,6 +2339,85 @@ function initKoAdminSelectors() {
       }
     };
   });
+}
+
+
+function buildKoMatchCard(key, m, bets) {
+  const bid = key;
+  const bet = bets['ko_' + key] || {};
+  const lk = m.status !== 'upcoming';
+  const hasBet = bet.h !== undefined;
+  const hasR = m.hg !== null && m.hg !== undefined;
+  const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
+  const roundMap = {r16:'16avos', qf:'Octavos', sf:'Cuartos', sf2:'Semis', third:'3° Puesto', final:'Final'};
+  const round = key.replace(/_\d+$/, '');
+  const roundName = roundMap[round] || round.toUpperCase();
+
+  const stHtml = m.status==='finished' ? '<span class="st-fin">FIN</span>'
+    : m.status==='live' ? '<span class="st-live">\u{1F534} VIVO</span>'
+    : '<span class="st-up">PRÓXIMO</span>';
+
+  const scoreHtml = hasR
+    ? '<div class="off-score">' + m.hg + '-' + m.ag + '</div>'
+    : '<div class="vs-txt">VS</div>';
+
+  let penHtml = '';
+  if (!lk && hasBet && bet.h === bet.a) {
+    penHtml = '<div style="margin-top:6px">'
+      + '<label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
+      + '<select id="pen_' + bid + '" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
+      + '<option value="">-- Sin penales --</option>'
+      + '<option value="' + m.h + '"' + (bet.pen===m.h?' selected':'') + '>' + m.h + '</option>'
+      + '<option value="' + m.a + '"' + (bet.pen===m.a?' selected':'') + '>' + m.a + '</option>'
+      + '</select></div>';
+  }
+
+  const hVal = bet.h !== undefined ? bet.h : '';
+  const aVal = bet.a !== undefined ? bet.a : '';
+  const disabledAttr = lk ? ' disabled' : '';
+
+  const saveBtnHtml = lk
+    ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">\u{1F512} Partido iniciado</div>'
+    : '<button class="save-btn" id="saveko_' + bid + '" onclick="saveKoBet(\''+bid+'\')">\u{1F4BE} GUARDAR APUESTA</button>';
+
+  const savedBadge = hasBet && !lk
+    ? '<div class="saved-badge">\u2705 ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
+    : '';
+
+  const ptsHtml = pts !== null && hasBet
+    ? '<div class="pts-earned">+' + (pts||0) + ' pts ' + (pts===5?'\u{1F3AF}':pts===4?'\u2B50':pts>=2?'\u2705':'\u274C') + '</div>'
+    : '';
+
+  return '<div class="mbc">'
+    + '<div class="mbc-head"><span class="grp-tag">' + roundName + '</span>' + stHtml + '</div>'
+    + '<div class="mbc-body">'
+    + '<div class="teams-row">'
+    + '<div class="t-side">' + fi(m.h,'flag-lg') + '<div class="t-name">' + m.h + '</div></div>'
+    + '<div class="score-center">' + scoreHtml + '</div>'
+    + '<div class="t-side">' + fi(m.a,'flag-lg') + '<div class="t-name">' + m.a + '</div></div>'
+    + '</div>'
+    + '<div class="bet-lbl">Tu apuesta</div>'
+    + '<div class="bet-row">'
+    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '"' + disabledAttr + ' onchange="onKoInput(\'' + bid + '\')">'
+    + '<span class="sd">-</span>'
+    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '"' + disabledAttr + ' onchange="onKoInput(\'' + bid + '\')">'
+    + '</div>'
+    + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
+    + saveBtnHtml + savedBadge + ptsHtml
+    + '</div></div>';
+}
+
+function buildKoMatchesHtml() {
+  autoPopulateBracket();
+  const ko = matchResults.ko || {};
+  const bets = allBets[currentUser] || {};
+  const entries = Object.entries(ko).filter(function(e){ return e[1].h && e[1].h !== 'Por definir'; });
+  if (!entries.length) return '';
+  let html = '<div class="sec-title" style="margin-top:20px;font-size:18px">FASE ELIMINATORIA</div>';
+  entries.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
+    html += buildKoMatchCard(entry[0], entry[1], bets);
+  });
+  return html;
 }
 
 // ═══════════════ INIT ═══════════════
