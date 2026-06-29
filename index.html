@@ -2253,6 +2253,8 @@ function autoPopulateBracket() {
 function initKoAdminSelectors() {
   const resSel = document.getElementById('koResultSel');
   if (!resSel) return;
+  // Ensure bracket is populated
+  autoPopulateBracket();
   const ko = matchResults.ko || {};
 
   resSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
