@@ -476,11 +476,12 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
       <p style="font-size:12px;color:var(--muted);margin-bottom:16px">Apostá los resultados de la fase eliminatoria. Si apostás empate, elegí quién gana en penales.</p>
 
       <div class="filter-bar" id="koFilterBar">
-        <button class="fbtn active" onclick="setKoFilter('r16',this)">Octavos</button>
-        <button class="fbtn" onclick="setKoFilter('qf',this)">Cuartos</button>
-        <button class="fbtn" onclick="setKoFilter('sf',this)">Semis</button>
-        <button class="fbtn" onclick="setKoFilter('final',this)">Final</button>
+        <button class="fbtn active" onclick="setKoFilter('r16',this)">16avos</button>
+        <button class="fbtn" onclick="setKoFilter('qf',this)">Octavos</button>
+        <button class="fbtn" onclick="setKoFilter('sf',this)">Cuartos</button>
+        <button class="fbtn" onclick="setKoFilter('sf2',this)">Semis</button>
         <button class="fbtn" onclick="setKoFilter('third',this)">3° Puesto</button>
+        <button class="fbtn" onclick="setKoFilter('final',this)">Final</button>
       </div>
 
       <div id="koMatchesList"></div>
@@ -529,7 +530,7 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
           <div style="flex:1">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">RONDA</label>
             <select id="koRoundSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
-              <option value="r16">Octavos</option><option value="qf">Cuartos</option><option value="sf">Semis</option><option value="third">3er Puesto</option><option value="final">Final</option>
+              <option value="r16">16avos de Final</option><option value="qf">Octavos de Final</option><option value="sf">Cuartos de Final</option><option value="sf2">Semis</option><option value="third">3° Puesto</option><option value="final">Final</option>
             </select>
           </div>
           <div style="flex:1">
@@ -617,11 +618,12 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
           <div style="flex:1">
             <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:5px">RONDA</label>
             <select id="koRoundSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:12px;outline:none;">
-              <option value="r16">Octavos</option>
-              <option value="qf">Cuartos</option>
-              <option value="sf">Semis</option>
+              <option value="r16">16avos de Final</option>
+              <option value="qf">Octavos de Final</option>
+              <option value="sf">Cuartos de Final</option>
+              <option value="final3">Semis</option>
+              <option value="sf2">3° Puesto</option>
               <option value="final">Final</option>
-              <option value="third">3° Puesto</option>
             </select>
           </div>
           <div style="flex:1">
@@ -2046,7 +2048,7 @@ function renderKoMatches() {
   }
 
   const bets = allBets[currentUser] || {};
-  const roundName = koRoundFilter==='r16'?'OCTAVOS':koRoundFilter==='qf'?'CUARTOS':koRoundFilter==='sf'?'SEMIS':koRoundFilter==='final'?'FINAL':'3° PUESTO';
+  const roundName = koRoundFilter==='r16'?'16AVOS':koRoundFilter==='qf'?'OCTAVOS':koRoundFilter==='sf'?'CUARTOS':koRoundFilter==='sf2'?'SEMIS':koRoundFilter==='third'?'3° PUESTO':'FINAL';
 
   let html = '';
   roundMatches.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
