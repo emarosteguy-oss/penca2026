@@ -962,6 +962,9 @@ function renderMyBets(){
       </div>
     </div>`;
   }).join('') + koMatchesHtml;
+  // Event delegation for KO save buttons
+  el.removeEventListener('click', _koClickHandler);
+  el.addEventListener('click', _koClickHandler);
 }
 
 async function saveBet(mid){
@@ -1851,11 +1854,20 @@ function onKoInput(bid){
   }
 }
 
-async function saveKoBet(bid){
-  if(_koRendering){return;}
+async function saveKoBet(bid, sourceEl) {
   if(!bid){return;}
-  const hEl=document.getElementById('koh_'+bid);
-  const aEl=document.getElementById('koa_'+bid);
+  // Find inputs near the clicked button (handles duplicate IDs across sections)
+  let hEl, aEl;
+  if(sourceEl) {
+    const card = sourceEl.closest('.mbc');
+    if(card) {
+      hEl = card.querySelector('[id^="koh_"]');
+      aEl = card.querySelector('[id^="koa_"]');
+    }
+  }
+  // Fallback to ID lookup
+  if(!hEl) hEl = document.getElementById('koh_'+bid);
+  if(!aEl) aEl = document.getElementById('koa_'+bid);
   if(!hEl||!aEl){showToast('Error: campo no encontrado','err');return;}
   const hv=hEl.value;
   const av=aEl.value;
@@ -2042,11 +2054,9 @@ function setKoFilter(round, btn) {
   renderKoMatches();
 }
 
-let _koRendering = false;
 function renderKoMatches() {
   const el = document.getElementById('koMatchesList');
   if (!el) return;
-  _koRendering = true;
   const ko = getKoMatches();
   const roundMatches = Object.entries(ko).filter(function(e){ return e[0].startsWith(koRoundFilter); });
 
@@ -2068,7 +2078,7 @@ function renderKoMatches() {
     const bracketM = BRACKET.r16.find(function(b){return b.id===key;}) || {};
     const kickoffDt = m.dt || bracketM.dt;
     let lk;
-    if (key === 'r16_1' || key === 'r16_2') {
+    if (key === 'r16_1' || key === 'r16_2' || key === 'r16_3') {
       lk = false; // Always open for manual entry
     } else if (kickoffDt) {
       lk = new Date() >= new Date(kickoffDt);
@@ -2108,7 +2118,7 @@ function renderKoMatches() {
 
     const saveBtnHtml = lk
       ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
-      : '<button class="save-btn" data-bid="' + bid + '" onclick="saveKoBet(this.dataset.bid)">💾 GUARDAR APUESTA</button>';
+      : '<button class="save-btn ko-save-btn" data-bid="' + bid + '">💾 GUARDAR APUESTA</button>';
 
     const savedBadge = hasBet && !lk
       ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
@@ -2145,7 +2155,17 @@ function renderKoMatches() {
   });
 
   el.innerHTML = html;
-  setTimeout(function(){ _koRendering = false; }, 100);
+  _koRendering = false;
+  // Use event delegation - ONE listener, no inline onclick
+  el.removeEventListener('click', _koClickHandler);
+  el.addEventListener('click', _koClickHandler);
+}
+
+function _koClickHandler(e) {
+  const btn = e.target.closest('.ko-save-btn');
+  if (!btn) return;
+  const bid = btn.dataset.bid;
+  if (bid) saveKoBet(bid, btn);
 }
 
 // ═══════════════ BRACKET STRUCTURE ═══════════════
@@ -2388,7 +2408,7 @@ function buildKoMatchCard(key, m, bets) {
   const bracketEntry = BRACKET.r16.find(function(b){return b.id===bid;}) || {};
   const kickoffDt = m.dt || bracketEntry.dt;
   let lk;
-  if (bid === 'r16_1' || bid === 'r16_2') {
+  if (bid === 'r16_1' || bid === 'r16_2' || bid === 'r16_3') {
     lk = false;
   } else if (kickoffDt) {
     lk = new Date() >= new Date(kickoffDt);
@@ -2426,7 +2446,7 @@ function buildKoMatchCard(key, m, bets) {
 
   const saveBtn = lk
     ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
-    : '<button class="save-btn" data-bid="' + bid + '" onclick="saveKoBet(this.dataset.bid)">💾 GUARDAR APUESTA</button>';
+    : '<button class="save-btn ko-save-btn" data-bid="' + bid + '">💾 GUARDAR APUESTA</button>';
 
   const savedBadge = hasBet && !lk
     ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
