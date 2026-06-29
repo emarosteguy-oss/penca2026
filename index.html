@@ -935,7 +935,7 @@ function toUYTDate(iso){
   const mos=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
   return `${days[u.getUTCDay()]} ${u.getUTCDate()} ${mos[u.getUTCMonth()]}`;
 }
-function locked(iso){return new Date()>=new Date(iso);}
+function locked(iso){return new Date()>=(new Date(new Date(iso).getTime()+15*60*1000));} // 15 min de gracia
 
 // ═══════════════ AVATAR ═══════════════
 const COLORS=['#E74C3C','#3498DB','#2ECC71','#F39C12','#9B59B6','#1ABC9C','#E67E22','#E91E63','#00BCD4','#8BC34A'];
@@ -1012,7 +1012,10 @@ function renderMyBets(){
     const r=matchResults[m.id]||{};
     const bet=bets[m.id]||{};
     const lk=locked(m.dt);
-    const st=r.status||(lk?'live':'upcoming');
+    const now=new Date();
+    const matchStart=new Date(m.dt);
+    const inGrace=now>=matchStart && now<new Date(matchStart.getTime()+15*60*1000);
+    const st=r.status||(lk?(inGrace?'live':'live'):'upcoming');
     const hasR=r.hg!==null&&r.hg!==undefined;
     const pts=hasR?calcPts(bet.h,bet.a,r.hg,r.ag):null;
     const hasBet=bet.h!==undefined&&bet.a!==undefined;
@@ -1049,7 +1052,7 @@ function renderMyBets(){
 
 async function saveBet(mid){
   const m=MATCHES.find(x=>x.id===mid);
-  if(!m||locked(m.dt)){showToast('🔒 Partido ya iniciado','err');return;}
+  if(!m||locked(m.dt)){showToast('🔒 Cerrado (más de 15 min del inicio)','err');return;}
   const hv=document.getElementById(`h_${mid}`).value;
   const av=document.getElementById(`a_${mid}`).value;
   if(hv===''||av===''){showToast('Ingresá ambos marcadores','err');return;}
@@ -2123,4 +2126,72 @@ function renderKoMatches() {
 
   el.innerHTML = html;
 }
+// ═══════════════ INIT ═══════════════
+setupPWA();
 
+// Wait for Firebase to be ready
+function waitForFb() {
+  if (window._fbReady) {
+    initApp();
+  } else {
+    document.addEventListener('fbReady', initApp, {once: true});
+    // Timeout fallback
+    setTimeout(() => {
+      if (!window._fbReady) {
+        document.getElementById('splashSub').textContent = 'Error de conexión — Recargá la página';
+        document.getElementById('splashSub').style.color = '#FF4444';
+      }
+    }, 10000);
+  }
+}
+
+async function initApp() {
+  document.getElementById('splashSub').textContent = 'CARGANDO DATOS...';
+  try {
+    await fbLoad();
+    fbListen();
+  } catch(e) {
+    console.error('Firebase error:', e);
+    document.getElementById('splashSub').textContent = 'Error Firebase: ' + e.message;
+    document.getElementById('splashSub').style.color = '#FF4444';
+    return;
+  }
+
+  const saved = localStorage.getItem('pencaUser');
+  const savedPass = localStorage.getItem('pencaPass');
+
+  setTimeout(async () => {
+    document.getElementById('splash').classList.add('out');
+    if (saved && savedPass) {
+      try {
+        const db=window._db, doc=window._fbDoc, getDoc=window._fbGetDoc;
+        const passSnap = await getDoc(doc(db,'penca','passwords'));
+        const passwords = passSnap.exists() ? passSnap.data() : {};
+        if (!passwords[saved] || passwords[saved] === savedPass) {
+          currentUser = saved;
+          if (!registeredUsers.includes(saved)) { registeredUsers.push(saved); fbSaveUsers(); }
+          document.getElementById('app').classList.add('show');
+          renderAll();
+          aiRefresh();
+          setInterval(aiRefresh, 3*60*1000);
+          checkAdminAccess();
+          if (localStorage.getItem('pencaNotifEnabled') === '1') {
+            requestNotifPermission().then(ok => { if(ok){ cleanOldNotifLog(); scheduleNotifications(); } });
+          }
+          return;
+        }
+      } catch(e) {
+        console.error('Auto-login error:', e);
+      }
+    }
+    localStorage.removeItem('pencaUser');
+    localStorage.removeItem('pencaPass');
+    document.getElementById('loginScreen').classList.add('show');
+    renderUserChips();
+  }, 1200);
+}
+
+document.addEventListener('DOMContentLoaded', waitForFb);
+</script>
+</body>
+</html>
