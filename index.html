@@ -1794,9 +1794,12 @@ function onKoInput(bid){
 }
 
 async function saveKoBet(bid){
-  const hv=document.getElementById('koh_'+bid)?.value;
-  const av=document.getElementById('koa_'+bid)?.value;
-  if(hv===undefined||av===undefined||hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
+  const hEl=document.getElementById('koh_'+bid);
+  const aEl=document.getElementById('koa_'+bid);
+  if(!hEl||!aEl){showToast('Error: no se encontró el campo','err');return;}
+  const hv=hEl.value;
+  const av=aEl.value;
+  if(hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
   if(!allBets[currentUser])allBets[currentUser]={};
   const betKey = 'ko_' + bid;
   const existing=(allBets[currentUser][betKey])||{};
@@ -1999,7 +2002,7 @@ function renderKoMatches() {
     const m = entry[1];
     const bid = key;
     const bet = bets['ko_' + key] || {};
-    const lk = m.status !== 'upcoming';
+    const lk = m.status === 'finished'; // Only lock KO bets when result is final
     const hasBet = bet.h !== undefined;
     const hasR = m.hg !== null && m.hg !== undefined;
     const betDraw = hasBet && bet.h === bet.a;
@@ -2309,7 +2312,7 @@ function initKoAdminSelectors() {
 function buildKoMatchCard(key, m, bets) {
   const bid = key;
   const bet = bets['ko_' + key] || {};
-  const lk = m.status !== 'upcoming';
+  const lk = m.status === 'finished'; // Lock only when finished
   const hasBet = bet.h !== undefined;
   const hasR = m.hg !== null && m.hg !== undefined;
   const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
