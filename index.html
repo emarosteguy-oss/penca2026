@@ -1283,7 +1283,7 @@ Dame SOLO JSON válido sin markdown ni backticks:
 // ═══════════════ RENDER ALL ═══════════════
 function renderAll(){
   renderRanking();renderMyBets();renderChampions();
-  renderGroups();renderBracket();renderVerBets();renderKnockout();updateHeader();
+  renderGroups();renderBracket();renderVerBets();renderKoMatches();updateHeader();
 }
 function updateHeader(){
   if(!currentUser)return;
@@ -1303,7 +1303,7 @@ function showSection(name,btn){
   else if(name==='grupos') renderGroups();
   else if(name==='bracket') renderBracket();
   else if(name==='ver') renderVerBets();
-  else if(name==='knockout') renderKnockout();
+  else if(name==='knockout'){ renderKoMatches(); }
   else if(name==='knockout'){ renderKoMatches(); }
   else if(name==='reglas') {} 
   else if(name==='admin'){ renderAdmin().then(()=>{ initAdminSelectors(); populateKoResultSel(); }); }
@@ -1852,70 +1852,11 @@ async function saveKnockoutMatches(){
   }catch(e){console.error('KO save:',e);}
 }
 
-function renderKnockout(){
-  const bar=document.getElementById('koRoundFilter');
-  const el=document.getElementById('koMatchesList');
-  if(!el)return;
-  const rounds=KO_ROUNDS.filter(r=>KNOCKOUT_MATCHES.some(m=>m.round===r.key));
-  if(!rounds.length){
-    if(bar)bar.innerHTML='';
-    el.innerHTML='<div class="empty"><div class="empty-icon">⏳</div><div class="empty-ttl">PRÓXIMAMENTE</div><div style="font-size:12px;margin-top:6px;color:var(--muted)">El admin cargará los cruces cuando termine la fase de grupos</div></div>';
-    return;
-  }
-  if(bar)bar.innerHTML=rounds.map(r=>`<button class="fbtn ${koRoundFilter===r.key?'active':''}" onclick="setKoFilter('${r.key}',this)">${r.label}</button>`).join('');
-  const matches=KNOCKOUT_MATCHES.filter(m=>m.round===koRoundFilter);
-  const bets=allBets[currentUser]||{};
-  el.innerHTML=matches.map(m=>{
-    const bid='ko_'+m.id;
-    const b=bets[bid]||{};
-    const r=matchResults[bid]||{};
-    const lk=new Date()>=new Date(m.dt);
-    const hasR=r.hg!==null&&r.hg!==undefined;
-    const pts=hasR?calcPts(b.h,b.a,r.hg,r.ag,b.pen,r.pen):null;
-    const hasBet=b.h!==undefined&&b.a!==undefined;
-    const betIsDraw=hasBet&&b.h===b.a;
-    const realIsDraw=hasR&&r.hg===r.ag;
-    const stHtml=r.status==='live'?'<span class="st-live"><span class="pdot"></span>EN VIVO</span>':r.status==='finished'?'<span class="st-fin">FIN</span>':'<span class="st-up">PRÓXIMO</span>';
-    const roundLabel=KO_ROUNDS.find(x=>x.key===m.round)?.label||m.round;
-    const scoreHtml=hasR?`<div class="off-score">${r.hg}-${r.ag}</div>${realIsDraw&&r.pen?`<div style="font-size:10px;color:var(--gold);text-align:center">PEN: ${r.pen} 🏆</div>`:''}`:
-      '<div class="vs-txt">VS</div>';
-    const penHtml=(!lk&&betIsDraw)?`
-      <div style="margin-top:8px">
-        <div class="bet-lbl">¿QUIÉN GANA EN PENALES?</div>
-        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:4px">
-          <button onclick="setPenBet('${bid}','${m.h}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.h?'var(--gold)':'var(--border)'};background:${b.pen===m.h?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.h?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.h,'flag-img')} ${m.h}</button>
-          <button onclick="setPenBet('${bid}','${m.a}')" style="padding:7px 14px;border-radius:6px;border:1px solid ${b.pen===m.a?'var(--gold)':'var(--border)'};background:${b.pen===m.a?'rgba(201,168,76,.15)':'rgba(255,255,255,.04)'};color:${b.pen===m.a?'var(--gold2)':'var(--muted)'};font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:12px;cursor:pointer;">${fi(m.a,'flag-img')} ${m.a}</button>
-        </div>
-      </div>`:(hasBet&&betIsDraw&&b.pen&&!lk)?`<div style="font-size:11px;color:var(--gold);text-align:center;margin-top:6px">Penales: ${b.pen} ✓</div>`:'';
-    const ptsHtml=pts!==null&&hasBet?`<div class="pts-earned">+${pts} pts ${pts===PTS.exact?'🎯':pts===PTS.diff?'⭐':pts===PTS.res?'✅':pts===PTS.penWrong?'🔵':''}</div>`:'';
-    return `<div class="mbc">
-      <div class="mbc-head"><span class="grp-tag">${roundLabel}</span><span class="time-tag">📅 ${toUYTDate(m.dt)} · ${toUYT(m.dt)}</span>${stHtml}</div>
-      <div class="mbc-body">
-        <div class="teams-row">
-          <div class="t-side">${fi(m.h,'flag-lg')}<div class="t-name">${m.h}</div></div>
-          <div class="score-center">${scoreHtml}</div>
-          <div class="t-side">${fi(m.a,'flag-lg')}<div class="t-name">${m.a}</div></div>
-        </div>
-        <div class="bet-lbl">TU APUESTA</div>
-        <div class="bet-row">
-          <input class="si" id="koh_${bid}" type="number" min="0" max="20" placeholder="-" value="${b.h!==undefined?b.h:''}" ${lk?'disabled':''} oninput="onKoInput('${bid}')">
-          <span class="sd">-</span>
-          <input class="si" id="koa_${bid}" type="number" min="0" max="20" placeholder="-" value="${b.a!==undefined?b.a:''}" ${lk?'disabled':''} oninput="onKoInput('${bid}')">
-        </div>
-        <div id="kopenrow_${bid}">${penHtml}</div>
-        ${lk?'<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>':'<button class="save-btn" onclick="saveKoBet(''+bid+'')">💾 GUARDAR APUESTA</button>'}
-        ${ptsHtml}
-        <div style="font-size:10px;color:var(--muted);text-align:center;margin-top:5px">📍 ${m.venue||''}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
 function setKoFilter(round,btn){
   koRoundFilter=round;
   document.querySelectorAll('#koRoundFilter .fbtn').forEach(b=>b.classList.remove('active'));
   if(btn)btn.classList.add('active');
-  renderKnockout();
+  renderKoMatches();
 }
 
 function onKoInput(bid){
@@ -1942,7 +1883,7 @@ async function saveKoBet(bid){
   allBets[currentUser][bid]={...existing,h:parseInt(hv),a:parseInt(av)};
   await fbSaveBets(currentUser);
   showToast('✅ Apuesta guardada: '+hv+'-'+av,'ok');
-  renderKnockout();updateHeader();
+  renderKoMatches();updateHeader();
 }
 
 async function setPenBet(bid,team){
@@ -1950,7 +1891,7 @@ async function setPenBet(bid,team){
   allBets[currentUser][bid]={...(allBets[currentUser][bid]||{}),pen:team};
   await fbSaveBets(currentUser);
   showToast('✅ Penales: '+team,'ok');
-  renderKnockout();
+  renderKoMatches();
 }
 
 async function saveKoResult(bid,hg,ag,status,pen){
@@ -1979,7 +1920,7 @@ function addKoMatchFromAdmin(){
   document.getElementById('koDtInput').value='';
   document.getElementById('koVenueInput').value='';
   populateKoResultSel();
-  renderKnockout();
+  renderKoMatches();
 }
 
 function populateKoResultSel(){
@@ -2094,7 +2035,7 @@ function renderKoMatches() {
   const el = document.getElementById('koMatchesList');
   if (!el) return;
   const ko = getKoMatches();
-  const roundMatches = Object.entries(ko).filter(([k]) => k.startsWith(koFilter));
+  const roundMatches = Object.entries(ko).filter(function(e){ return e[0].startsWith(koRoundFilter); });
 
   if (!roundMatches.length) {
     el.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div><div class="empty-ttl">SIN PARTIDOS AÚN</div><div style="font-size:12px;margin-top:4px">El admin cargará los cruces cuando se definan</div></div>';
@@ -2102,215 +2043,84 @@ function renderKoMatches() {
   }
 
   const bets = allBets[currentUser] || {};
-  el.innerHTML = roundMatches.sort((a,b) => a[0].localeCompare(b[0])).map(([key, m]) => {
+  const roundName = koRoundFilter==='r16'?'OCTAVOS':koRoundFilter==='qf'?'CUARTOS':koRoundFilter==='sf'?'SEMIS':koRoundFilter==='final'?'FINAL':'3° PUESTO';
+
+  let html = '';
+  roundMatches.sort(function(a,b){ return a[0].localeCompare(b[0]); }).forEach(function(entry) {
+    const key = entry[0];
+    const m = entry[1];
+    const bid = key;
     const bet = bets['ko_' + key] || {};
-    const lk = m.status !== 'upcoming' || locked(m.dt || '2026-07-01T00:00:00Z');
+    const lk = m.status !== 'upcoming';
     const hasBet = bet.h !== undefined;
     const hasR = m.hg !== null && m.hg !== undefined;
     const betDraw = hasBet && bet.h === bet.a;
     const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
 
-    const stHtml = m.status === 'live' ? '<span class="st-live">🔴 VIVO</span>'
-      : m.status === 'finished' ? '<span class="st-fin">FIN</span>'
+    const stHtml = m.status === 'live'
+      ? '<span class="st-live">🔴 VIVO</span>'
+      : m.status === 'finished'
+      ? '<span class="st-fin">FIN</span>'
       : '<span class="st-up">PRÓXIMO</span>';
 
-    const scoreHtml = hasR
-      ? '<div class="off-score">' + m.hg + '-' + m.ag + (m.wentToPens ? '<div style="font-size:11px;color:var(--gold)">Penales: ' + (m.penWinner||'?') + '</div>' : '') + '</div>'
-      : '<div class="vs-txt">VS</div>';
-
-    const penBetHtml = !lk && betDraw ? '<div style="margin-top:6px"><label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label><select id="pen_' + key + '" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;"><option value="">-- Sin penales --</option><option value="' + m.h + '" ' + (bet.pen===m.h?'selected':'') + '>' + m.h + '</option><option value="' + m.a + '" ' + (bet.pen===m.a?'selected':'') + '>' + m.a + '</option></select></div>' : '';
-
-    const savedBadge = hasBet && !lk ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen?' · Pen: '+bet.pen:'') + '</div>' : '';
-    const ptsHtml = pts !== null && hasBet ? '<div class="pts-earned">+' + pts + ' pts ' + (pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'') + '</div>' : '';
-    const saveBtn = lk ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
-      : '<button class="save-btn" onclick="saveKoBet('' + key + '')">💾 GUARDAR APUESTA</button>';
-
-    return '<div class="mbc">'
-      + '<div class="mbc-head"><span class="grp-tag">' + (koFilter==='r16'?'OCTAVOS':koFilter==='qf'?'CUARTOS':koFilter==='sf'?'SEMIS':koFilter==='final'?'FINAL':'3° PUESTO') + '</span>' + stHtml + '</div>'
-      + '<div class="mbc-body">'
-      + '<div class="teams-row"><div class="t-side">' + fi(m.h,'flag-lg') + '<div class="t-name">' + m.h + '</div></div>'
-      + '<div class="score-center">' + scoreHtml + '</div>'
-      + '<div class="t-side">' + fi(m.a,'flag-lg') + '<div class="t-name">' + m.a + '</div></div></div>'
-      + '<div class="bet-lbl">Tu apuesta</div>'
-      + '<div class="bet-row"><input class="si" id="koh_' + key + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + '><span class="sd">-</span><input class="si" id="koa_' + key + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' onchange="checkKoDraw('' + key + '')"  oninput="checkKoDraw('' + key + '')">' + '</div>'
-      + penBetHtml
-      + saveBtn + savedBadge + ptsHtml
-      + '</div></div>';
-  }).join('');
-}
-
-function checkKoDraw(key) {
-  const h = document.getElementById('koh_' + key);
-  const a = document.getElementById('koa_' + key);
-  const penRow = document.getElementById('pen_' + key);
-  if (!h || !a) return;
-  // Show pen selector if draw
-  const isDraw = h.value !== '' && a.value !== '' && parseInt(h.value) === parseInt(a.value);
-  if (penRow) penRow.parentElement.style.display = isDraw ? 'block' : 'none';
-}
-
-async function saveKoBet(key) {
-  const h = document.getElementById('koh_' + key);
-  const a = document.getElementById('koa_' + key);
-  const penSel = document.getElementById('pen_' + key);
-  if (!h || !a || h.value === '' || a.value === '') { showToast('Ingresá ambos marcadores', 'err'); return; }
-  const hv = parseInt(h.value), av = parseInt(a.value);
-  const pen = (hv === av && penSel) ? penSel.value : null;
-  if (!allBets[currentUser]) allBets[currentUser] = {};
-  allBets[currentUser]['ko_' + key] = { h: hv, a: av, pen: pen || null };
-  await fbSaveBets(currentUser);
-  showToast('✅ Apuesta guardada' + (pen ? ' · Penales: ' + pen : ''), 'ok');
-  renderKoMatches();
-  updateHeader();
-}
-
-// ADMIN: Add knockout match
-function initKoAdminSelectors() {
-  const allTeams = [...ALL_TEAMS];
-  // Add teams from existing KO matches
-  const ko = getKoMatches();
-  Object.values(ko).forEach(m => {
-    if (m.h && !allTeams.includes(m.h)) allTeams.push(m.h);
-    if (m.a && !allTeams.includes(m.a)) allTeams.push(m.a);
-  });
-  allTeams.sort();
-
-  ['koHomeSel','koAwaySel'].forEach(id => {
-    const sel = document.getElementById(id);
-    if (!sel) return;
-    sel.innerHTML = '<option value="">-- Seleccioná --</option>';
-    allTeams.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t; opt.textContent = t;
-      sel.appendChild(opt);
-    });
-  });
-
-  // Result selector
-  const resSel = document.getElementById('koResultSel');
-  if (resSel) {
-    resSel.innerHTML = '<option value="">-- Seleccioná partido --</option>';
-    Object.entries(ko).forEach(([key, m]) => {
-      const opt = document.createElement('option');
-      opt.value = key;
-      const hasR = m.hg !== null && m.hg !== undefined;
-      opt.textContent = m.h + ' vs ' + m.a + (hasR ? ' ✅ ' + m.hg + '-' + m.ag : '');
-      if (hasR) opt.style.color = '#00E676';
-      resSel.appendChild(opt);
-    });
-    resSel.onchange = function() {
-      const key = this.value;
-      if (!key) return;
-      const m = ko[key];
-      if (!m) return;
-      document.getElementById('koHG').value = m.hg !== undefined ? m.hg : '';
-      document.getElementById('koAG').value = m.ag !== undefined ? m.ag : '';
-      // Pen winner
-      const penSel = document.getElementById('koPenWinner');
-      penSel.innerHTML = '<option value="">Sin penales</option><option value="' + m.h + '">' + m.h + '</option><option value="' + m.a + '">' + m.a + '</option>';
-      if (m.penWinner) penSel.value = m.penWinner;
-      // Show pen row if result is draw
-      const hg = parseInt(document.getElementById('koHG').value);
-      const ag = parseInt(document.getElementById('koAG').value);
-      document.getElementById('koPenRow').style.display = (hg === ag) ? 'block' : 'none';
-    };
-  }
-
-  // Show/hide pen row on result change
-  ['koHG','koAG'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.oninput = function() {
-      const hg = parseInt(document.getElementById('koHG').value||'-1');
-      const ag = parseInt(document.getElementById('koAG').value||'-1');
-      const penSel = document.getElementById('koResultSel').value;
-      if (penSel) {
-        const m = ko[penSel];
-        if (m) {
-          document.getElementById('koPenWinner').innerHTML = '<option value="">Sin penales</option><option value="' + m.h + '">' + m.h + '</option><option value="' + m.a + '">' + m.a + '</option>';
-        }
+    let scoreHtml = '<div class="vs-txt">VS</div>';
+    if (hasR) {
+      scoreHtml = '<div class="off-score">' + m.hg + '-' + m.ag + '</div>';
+      if (m.wentToPens && m.penWinner) {
+        scoreHtml += '<div style="font-size:11px;color:var(--gold);text-align:center">Penales: ' + m.penWinner + '</div>';
       }
-      document.getElementById('koPenRow').style.display = (!isNaN(hg) && !isNaN(ag) && hg === ag) ? 'block' : 'none';
-    };
-  });
-}
-
-async function addKoMatch() {
-  const round = document.getElementById('koRoundSel').value;
-  const num = document.getElementById('koNumInput').value;
-  const home = document.getElementById('koHomeSel').value;
-  const away = document.getElementById('koAwaySel').value;
-  if (!home || !away) { showToast('Seleccioná ambos equipos', 'err'); return; }
-  if (home === away) { showToast('Los equipos deben ser distintos', 'err'); return; }
-  const key = round + '_' + num;
-  if (!matchResults.ko) matchResults.ko = {};
-  matchResults.ko[key] = { h: home, a: away, hg: null, ag: null, status: 'upcoming', penWinner: null, wentToPens: false };
-  await fbSaveResults();
-  showToast('✅ Cruce agregado: ' + home + ' vs ' + away, 'ok');
-  initKoAdminSelectors();
-  renderKoMatches();
-}
-
-async function saveKoResult() {
-  const key = document.getElementById('koResultSel').value;
-  const hg = document.getElementById('koHG').value;
-  const ag = document.getElementById('koAG').value;
-  const status = document.getElementById('koStatus').value;
-  const penWinner = document.getElementById('koPenWinner').value;
-  if (!key) { showToast('Seleccioná un partido', 'err'); return; }
-  if (hg === '' || ag === '') { showToast('Ingresá el resultado', 'err'); return; }
-  const hgN = parseInt(hg), agN = parseInt(ag);
-  const wentToPens = hgN === agN && penWinner !== '';
-  if (!matchResults.ko) matchResults.ko = {};
-  matchResults.ko[key] = {
-    ...matchResults.ko[key],
-    hg: hgN, ag: agN, status,
-    penWinner: wentToPens ? penWinner : null,
-    wentToPens
-  };
-  await fbSaveResults();
-  showToast('✅ Resultado guardado', 'ok');
-  initKoAdminSelectors();
-  renderKoMatches();
-  renderRanking();
-}
-
-// Update getUserScore to include KO bets
-const _origGetUserScore = getUserScore;
-getUserScore = function(u) {
-  const base = _origGetUserScore(u);
-  const bets = allBets[u] || {};
-  const ko = getKoMatches();
-  let koPts = 0;
-  Object.entries(ko).forEach(([key, m]) => {
-    const b = bets['ko_' + key];
-    if (!b || m.hg === null || m.hg === undefined) return;
-    koPts += calcKoPts(b.h, b.a, b.pen, m.hg, m.ag, m.penWinner, m.wentToPens);
-  });
-  return { ...base, pts: base.pts + koPts };
-};
-
-// ═══════════════ INIT ═══════════════
-setupPWA();
-document.addEventListener('fbReady',async()=>{
-  document.getElementById('splashSub').textContent='CARGANDO DATOS...';
-  await fbLoad();
-  await loadKnockoutMatches();
-  fbListen();
-  const saved=localStorage.getItem('pencaUser');
-  setTimeout(()=>{
-    document.getElementById('splash').classList.add('out');
-    if(saved){
-      currentUser=saved;
-      if(!registeredUsers.includes(saved)){registeredUsers.push(saved);fbSaveUsers();}
-      document.getElementById('app').classList.add('show');
-      renderAll();aiRefresh();setInterval(aiRefresh,3*60*1000);
-      checkAdminAccess();
-    }else{
-      document.getElementById('loginScreen').classList.add('show');
-      renderUserChips();
     }
-  },1200);
-});
-</script>
-</body>
-</html>
+
+    let penHtml = '';
+    if (!lk && betDraw) {
+      const selPen = '<select id="pen_' + bid + '" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
+        + '<option value="">-- Sin penales --</option>'
+        + '<option value="' + m.h + '"' + (bet.pen===m.h?' selected':'') + '>' + m.h + '</option>'
+        + '<option value="' + m.a + '"' + (bet.pen===m.a?' selected':'') + '>' + m.a + '</option>'
+        + '</select>';
+      penHtml = '<div style="margin-top:6px"><label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>' + selPen + '</div>';
+    } else if (lk && hasBet && bet.pen) {
+      penHtml = '<div style="font-size:11px;color:var(--muted);margin-top:4px">Penales apostados: <b style="color:var(--gold)">' + bet.pen + '</b></div>';
+    }
+
+    const saveBtnHtml = lk
+      ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
+      : '<button class="save-btn" onclick="saveKoBet('' + bid + '')">💾 GUARDAR APUESTA</button>';
+
+    const savedBadge = hasBet && !lk
+      ? '<div class="saved-badge">✅ ' + bet.h + '-' + bet.a + (bet.pen ? ' · Pen: ' + bet.pen : '') + '</div>'
+      : '';
+
+    let ptsHtml = '';
+    if (pts !== null && hasBet) {
+      const icon = pts===5?'🎯':pts===4?'⭐':pts>=2?'✅':'❌';
+      ptsHtml = '<div class="pts-earned">+' + pts + ' pts ' + icon + '</div>';
+    }
+
+    html += '<div class="mbc">'
+      + '<div class="mbc-head">'
+      + '<span class="grp-tag">' + roundName + '</span>'
+      + stHtml
+      + '</div>'
+      + '<div class="mbc-body">'
+      + '<div class="teams-row">'
+      + '<div class="t-side">' + fi(m.h, 'flag-lg') + '<div class="t-name">' + m.h + '</div></div>'
+      + '<div class="score-center">' + scoreHtml + '</div>'
+      + '<div class="t-side">' + fi(m.a, 'flag-lg') + '<div class="t-name">' + m.a + '</div></div>'
+      + '</div>'
+      + '<div class="bet-lbl">Tu apuesta</div>'
+      + '<div class="bet-row">'
+      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput('' + bid + '')">'
+      + '<span class="sd">-</span>'
+      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' oninput="onKoInput('' + bid + '')">'
+      + '</div>'
+      + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
+      + saveBtnHtml
+      + savedBadge
+      + ptsHtml
+      + '</div></div>';
+  });
+
+  el.innerHTML = html;
+}
+
