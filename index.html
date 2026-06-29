@@ -2002,7 +2002,13 @@ function renderKoMatches() {
     const m = entry[1];
     const bid = key;
     const bet = bets['ko_' + key] || {};
-    const lk = m.status === 'finished'; // Only lock KO bets when result is final
+    // Lock based on kickoff time for r16, status for later rounds
+    let lk;
+    if (m.dt) {
+      lk = new Date() >= new Date(m.dt) && key !== 'r16_1' && key !== 'r16_2';
+    } else {
+      lk = m.status === 'finished';
+    }
     const hasBet = bet.h !== undefined;
     const hasR = m.hg !== null && m.hg !== undefined;
     const betDraw = hasBet && bet.h === bet.a;
@@ -2035,7 +2041,7 @@ function renderKoMatches() {
     }
 
     const saveBtnHtml = lk
-      ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Partido iniciado</div>'
+      ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
       : '<button class="save-btn" onclick="saveKoBet(\'' + bid + '\')">💾 GUARDAR APUESTA</button>';
 
     const savedBadge = hasBet && !lk
@@ -2078,24 +2084,24 @@ function renderKoMatches() {
 // ═══════════════ BRACKET STRUCTURE ═══════════════
 // Pre-defined bracket: who plays who based on results
 const BRACKET = {
-  // 16avos de Final (Round of 32) - pre-seeded matchups
+  // 16avos de Final - kickoff times in UTC (UYT = UTC-3)
   r16: [
-    {id:'r16_1', h:'Sudáfrica', a:'Canadá'},
-    {id:'r16_2', h:'Brasil', a:'Japón'},
-    {id:'r16_3', h:'Alemania', a:'Paraguay'},
-    {id:'r16_4', h:'Países Bajos', a:'Marruecos'},
-    {id:'r16_5', h:'C. de Marfil', a:'Noruega'},
-    {id:'r16_6', h:'Francia', a:'Suecia'},
-    {id:'r16_7', h:'México', a:'Ecuador'},
-    {id:'r16_8', h:'Inglaterra', a:'RD Congo'},
-    {id:'r16_9', h:'Bélgica', a:'Senegal'},
-    {id:'r16_10', h:'EE.UU.', a:'Bosnia-Herz.'},
-    {id:'r16_11', h:'España', a:'Austria'},
-    {id:'r16_12', h:'Portugal', a:'Croacia'},
-    {id:'r16_13', h:'Suiza', a:'Argelia'},
-    {id:'r16_14', h:'Australia', a:'Egipto'},
-    {id:'r16_15', h:'Argentina', a:'Cabo Verde'},
-    {id:'r16_16', h:'Colombia', a:'Ghana'},
+    {id:'r16_1',  h:'Sudáfrica', a:'Canadá',        dt:'2026-06-28T19:00:00Z'}, // 16:00 UYT Jun28
+    {id:'r16_2',  h:'Brasil',    a:'Japón',          dt:'2026-06-29T17:00:00Z'}, // 14:00 UYT Jun29
+    {id:'r16_3',  h:'Alemania',  a:'Paraguay',       dt:'2026-06-29T20:30:00Z'}, // 17:30 UYT Jun29
+    {id:'r16_4',  h:'Países Bajos', a:'Marruecos',  dt:'2026-06-30T01:00:00Z'}, // 22:00 UYT Jun29
+    {id:'r16_5',  h:'C. de Marfil', a:'Noruega',    dt:'2026-06-30T17:00:00Z'}, // 14:00 UYT Jun30
+    {id:'r16_6',  h:'Francia',   a:'Suecia',         dt:'2026-06-30T21:00:00Z'}, // 18:00 UYT Jun30
+    {id:'r16_7',  h:'México',    a:'Ecuador',        dt:'2026-07-01T01:00:00Z'}, // 22:00 UYT Jun30
+    {id:'r16_8',  h:'Inglaterra',a:'RD Congo',       dt:'2026-07-01T16:00:00Z'}, // 13:00 UYT Jul1
+    {id:'r16_9',  h:'Bélgica',   a:'Senegal',        dt:'2026-07-01T20:00:00Z'}, // 17:00 UYT Jul1
+    {id:'r16_10', h:'EE.UU.',    a:'Bosnia-Herz.',   dt:'2026-07-02T00:00:00Z'}, // 21:00 UYT Jul1
+    {id:'r16_11', h:'España',    a:'Austria',        dt:'2026-07-02T19:00:00Z'}, // 16:00 UYT Jul2
+    {id:'r16_12', h:'Portugal',  a:'Croacia',        dt:'2026-07-02T23:00:00Z'}, // 20:00 UYT Jul2
+    {id:'r16_13', h:'Suiza',     a:'Argelia',        dt:'2026-07-03T03:00:00Z'}, // 00:00 UYT Jul3
+    {id:'r16_14', h:'Australia', a:'Egipto',         dt:'2026-07-03T18:00:00Z'}, // 15:00 UYT Jul3
+    {id:'r16_15', h:'Argentina', a:'Cabo Verde',     dt:'2026-07-03T22:00:00Z'}, // 19:00 UYT Jul3
+    {id:'r16_16', h:'Colombia',  a:'Ghana',          dt:'2026-07-04T01:30:00Z'}, // 22:30 UYT Jul3
   ],
   // Octavos pairings: winner of r16_X vs winner of r16_Y
   qf: [
@@ -2156,7 +2162,7 @@ function autoPopulateBracket() {
   // Seed r16 matches if not already there
   BRACKET.r16.forEach(m => {
     if (!ko[m.id]) {
-      ko[m.id] = {h: m.h, a: m.a, hg: null, ag: null, status: 'upcoming', penWinner: null, wentToPens: false};
+      ko[m.id] = {h: m.h, a: m.a, dt: m.dt||null, hg: null, ag: null, status: 'upcoming', penWinner: null, wentToPens: false};
       changed = true;
     }
   });
@@ -2312,7 +2318,16 @@ function initKoAdminSelectors() {
 function buildKoMatchCard(key, m, bets) {
   const bid = key;
   const bet = bets['ko_' + key] || {};
-  const lk = m.status === 'finished'; // Lock only when finished
+  // Lock based on kickoff time
+  const koEntry = (matchResults.ko||{})[bid] || {};
+  const bracketEntry = BRACKET.r16.find(function(b){return b.id===bid;}) || {};
+  const kickoff = koEntry.dt || bracketEntry.dt;
+  let lk;
+  if (kickoff) {
+    lk = new Date() >= new Date(kickoff) && bid !== 'r16_1' && bid !== 'r16_2';
+  } else {
+    lk = koEntry.status === 'finished';
+  }
   const hasBet = bet.h !== undefined;
   const hasR = m.hg !== null && m.hg !== undefined;
   const pts = hasR ? calcKoPts(bet.h, bet.a, bet.pen, m.hg, m.ag, m.penWinner, m.wentToPens) : null;
@@ -2344,7 +2359,7 @@ function buildKoMatchCard(key, m, bets) {
   const disabledAttr = lk ? ' disabled' : '';
 
   const saveBtnHtml = lk
-    ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">\u{1F512} Partido iniciado</div>'
+    ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
     : '<button class="save-btn" id="saveko_' + bid + '" onclick="saveKoBet(\''+bid+'\')">\u{1F4BE} GUARDAR APUESTA</button>';
 
   const savedBadge = hasBet && !lk
