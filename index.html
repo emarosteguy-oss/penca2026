@@ -574,6 +574,12 @@ header{background:linear-gradient(135deg,#0B1020 0%,#141828 100%);border-bottom:
             <input id="editAG" type="number" min="0" max="20" placeholder="-" style="width:100%;background:#1C2336;border:2px solid rgba(255,255,255,.15);border-radius:7px;padding:10px;color:#fff;font-size:24px;font-family:'Bebas Neue',sans-serif;text-align:center;outline:none;">
           </div>
         </div>
+        <div id="editPenRow" style="display:none;margin-bottom:10px;">
+          <label style="font-family:'Barlow Condensed',sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:5px">GANADOR EN PENALES</label>
+          <select id="editPenSel" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px;color:#fff;font-size:13px;outline:none;">
+            <option value="">Sin penales</option>
+          </select>
+        </div>
         <button onclick="saveEditedBet()" style="width:100%;background:linear-gradient(135deg,#003DA5,#0052CC);color:#fff;border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;cursor:pointer;">✏️ GUARDAR CORRECCIÓN</button>
       </div>
 
@@ -1065,7 +1071,7 @@ function renderGroups(){
 
 // ═══════════════ BRACKET ═══════════════
 function renderBracket(){
-  const ko=matchResults.knockout||{};
+  const ko=matchResults.ko||{}; // Fixed: use .ko not .knockout
   const tbd='<span style="color:var(--muted);font-size:10px">Por definir</span>';
 
   function bMatch(t1,s1,t2,s2,done){
@@ -1796,7 +1802,7 @@ function onEditMatchChange() {
 
   let bet;
   if (val.startsWith('ko_')) {
-    bet = (allBets[user] || {})[val]; // key is 'ko_r16_1' etc
+    bet = (allBets[user] || {})[val];
   } else {
     const mid = parseInt(val.replace('g_', ''));
     bet = (allBets[user] || {})[mid];
@@ -1808,6 +1814,26 @@ function onEditMatchChange() {
   } else {
     document.getElementById('editHG').value = '';
     document.getElementById('editAG').value = '';
+  }
+
+  // Show/hide penalty row for KO matches
+  const editPenRow = document.getElementById('editPenRow');
+  if (editPenRow) {
+    if (val.startsWith('ko_')) {
+      const koKey = val.replace('ko_', '');
+      const m = (matchResults.ko || {})[koKey] || {};
+      const br = BRACKET.r16.find(function(b){return b.id===koKey;}) || {};
+      const teamH = m.h || br.h || '';
+      const teamA = m.a || br.a || '';
+      document.getElementById('editPenSel').innerHTML =
+        '<option value="">Sin penales</option>'
+        + '<option value="'+teamH+'">'+teamH+'</option>'
+        + '<option value="'+teamA+'">'+teamA+'</option>';
+      if (bet && bet.pen) document.getElementById('editPenSel').value = bet.pen;
+      editPenRow.style.display = 'block';
+    } else {
+      editPenRow.style.display = 'none';
+    }
   }
 }
 
@@ -1840,16 +1866,19 @@ async function saveEditedBet() {
   if (!allBets[user]) allBets[user] = {};
 
   if (val.startsWith('ko_')) {
-    // KO bet - key is already 'ko_r16_1' format
-    allBets[user][val] = { h: parseInt(hg), a: parseInt(ag) };
+    const hgN = parseInt(hg), agN = parseInt(ag);
+    let pen = null;
+    const penSel = document.getElementById('editPenSel');
+    if (hgN === agN && penSel && penSel.value) pen = penSel.value;
+    allBets[user][val] = { h: hgN, a: agN, pen: pen };
   } else {
-    // Group bet
     const mid = parseInt(val.replace('g_', ''));
     allBets[user][mid] = { h: parseInt(hg), a: parseInt(ag) };
   }
 
   await fbSaveBets(user);
-  showToast('✅ Apuesta de ' + user + ' corregida: ' + hg + '-' + ag, 'ok');
+  const pen = allBets[user][val] && allBets[user][val].pen;
+  showToast('✅ Apuesta de ' + user + ' corregida: ' + hg + '-' + ag + (pen?' · Pen: '+pen:''), 'ok');
   renderAll();
   onEditUserChange();
 }
