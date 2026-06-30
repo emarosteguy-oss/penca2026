@@ -1907,36 +1907,37 @@ function onKoInput(bid){
 async function saveKoBet(bid, sourceEl) {
   if(!bid){return;}
   // Find inputs near the clicked button (handles duplicate IDs across sections)
-  let hEl, aEl;
+  let hEl, aEl, penEl;
   if(sourceEl) {
     const card = sourceEl.closest('.mbc');
     if(card) {
       hEl = card.querySelector('[id^="koh_"]');
       aEl = card.querySelector('[id^="koa_"]');
+      penEl = card.querySelector('[id^="pen_"]');
     }
   }
   // Fallback to ID lookup
   if(!hEl) hEl = document.getElementById('koh_'+bid);
   if(!aEl) aEl = document.getElementById('koa_'+bid);
+  if(!penEl) penEl = document.getElementById('pen_'+bid);
   if(!hEl||!aEl){showToast('Error: campo no encontrado','err');return;}
   const hv=hEl.value;
   const av=aEl.value;
   if(hv===''||av===''){showToast('Ingresá ambos goles','err');return;}
+  const hvN=parseInt(hv), avN=parseInt(av);
+  // If it's a draw, require penalty winner selection
+  let pen=null;
+  if(hvN===avN){
+    pen = penEl ? penEl.value : null;
+    if(!pen){showToast('Es empate — elegí quién gana en penales','err');return;}
+  }
   if(!allBets[currentUser])allBets[currentUser]={};
   const betKey = 'ko_' + bid;
   const existing=(allBets[currentUser][betKey])||{};
-  allBets[currentUser][betKey]={...existing,h:parseInt(hv),a:parseInt(av)};
+  allBets[currentUser][betKey]={...existing,h:hvN,a:avN,pen:pen};
   await fbSaveBets(currentUser);
-  showToast('✅ Apuesta guardada: '+hv+'-'+av,'ok');
+  showToast('✅ Apuesta guardada: '+hv+'-'+av+(pen?' · Pen: '+pen:''),'ok');
   renderKoMatches();updateHeader();
-}
-
-async function setPenBet(bid,team){
-  if(!allBets[currentUser])allBets[currentUser]={};
-  allBets[currentUser][bid]={...(allBets[currentUser][bid]||{}),pen:team};
-  await fbSaveBets(currentUser);
-  showToast('✅ Penales: '+team,'ok');
-  renderKoMatches();
 }
 
 async function saveKoResult(bid,hg,ag,status,pen){
