@@ -854,19 +854,24 @@ function al(n){return n.charAt(0).toUpperCase();}
 function getUserScore(u){
   const bets=allBets[u]||{};
   let pts=0,exact=0,res=0,diff=0;
+  // Group stage points
   MATCHES.forEach(m=>{
     const b=bets[m.id];const r=matchResults[m.id];
     if(!b||!r||r.hg===null||r.hg===undefined)return;
-    const p=calcPts(b.h,b.a,r.hg,r.ag,null,null);
+    const p=calcPts(b.h,b.a,r.hg,r.ag);
     pts+=p;if(p===PTS.exact)exact++;else if(p===PTS.diff)diff++;else if(p===PTS.res)res++;
   });
-  KNOCKOUT_MATCHES.forEach(m=>{
-    const bid='ko_'+m.id;
-    const b=bets[bid];const r=matchResults[bid];
-    if(!b||!r||r.hg===null||r.hg===undefined)return;
-    const p=calcPts(b.h,b.a,r.hg,r.ag,b.pen,r.pen);
+  // Knockout stage points - use matchResults.ko (new system)
+  const ko=matchResults.ko||{};
+  Object.entries(ko).forEach(function(entry){
+    const key=entry[0]; const m=entry[1];
+    if(!m||m.hg===null||m.hg===undefined)return;
+    const b=bets['ko_'+key];
+    if(!b||b.h===undefined)return;
+    const p=calcKoPts(b.h,b.a,b.pen,m.hg,m.ag,m.penWinner,m.wentToPens);
     pts+=p;if(p===PTS.exact)exact++;else if(p===PTS.diff)diff++;else if(p===PTS.res)res++;
   });
+  // Champion bonus points
   if(matchResults.winner&&bets.champ1===matchResults.winner)pts+=PTS.c1;
   if(matchResults.second&&bets.champ2===matchResults.second)pts+=PTS.c2;
   if(matchResults.third&&bets.champ3===matchResults.third)pts+=PTS.c3;
