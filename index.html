@@ -1922,7 +1922,9 @@ function onKoInput(bid){
   if(parseInt(hv)===parseInt(av)){
     // Draw - show penalty selector
     const ko=(matchResults.ko||{})[bid]||{};
-    const br=BRACKET.r16.find(function(b){return b.id===bid;})||{};
+    // Search in all bracket rounds for team names
+    const allBracketMatches = BRACKET.r16.concat(BRACKET.qf).concat(BRACKET.sf).concat(BRACKET.sf2).concat(BRACKET.third).concat(BRACKET.final);
+    const br=allBracketMatches.find(function(b){return b.id===bid;})||{};
     const teamH=ko.h||br.h||'Local';
     const teamA=ko.a||br.a||'Visitante';
     const curBet=(allBets[currentUser]||{})['ko_'+bid]||{};
@@ -2229,9 +2231,9 @@ function renderKoMatches() {
       + '</div>'
       + '<div class="bet-lbl">Tu apuesta</div>'
       + '<div class="bet-row">'
-      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" onchange="onKoInput(this.dataset.bid)">'
+      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid)">'
       + '<span class="sd">-</span>'
-      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" onchange="onKoInput(this.dataset.bid)">'
+      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid)">'
       + '</div>'
       + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
       + saveBtnHtml
@@ -2557,9 +2559,9 @@ function buildKoMatchCard(key, m, bets) {
     + '</div>'
     + '<div class="bet-lbl">Tu apuesta</div>'
     + '<div class="bet-row">'
-    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' onchange="onKoInput(this.dataset.bid)">'
+    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid)">'
     + '<span class="sd">-</span>'
-    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' onchange="onKoInput(this.dataset.bid)">'
+    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid)">'
     + '</div>'
     + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
     + saveBtn + savedBadge + ptsHtml
