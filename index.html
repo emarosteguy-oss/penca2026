@@ -2516,16 +2516,21 @@ function buildKoMatchCard(key, m, bets) {
   const hVal = hasBet ? bet.h : '';
   const aVal = hasBet ? bet.a : '';
 
+  // Always render pen selector, show/hide with CSS
+  const betDraw2 = hasBet && Number.isInteger(bet.h) && bet.h === bet.a;
   let penHtml = '';
-  if (!lk && hasBet && bet.h === bet.a) {
+  if (lk && hasBet && bet.pen) {
+    penHtml = '<div style="font-size:11px;color:var(--muted);margin-top:4px">Penales: <b style="color:var(--gold)">' + bet.pen + '</b></div>';
+  } else if (!lk) {
     penHtml = '<div style="margin-top:6px">'
       + '<label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
       + '<select id="pen_' + bid + '" style="width:100%;background:#1C2336;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:8px;color:#fff;font-size:13px;outline:none;">'
-      + '<option value="">-- Sin penales --</option>'
+      + '<option value="">-- Elegí el ganador --</option>'
       + '<option value="' + m.h + '"' + (bet.pen===m.h?' selected':'') + '>' + m.h + '</option>'
       + '<option value="' + m.a + '"' + (bet.pen===m.a?' selected':'') + '>' + m.a + '</option>'
       + '</select></div>';
   }
+  const penDisplay = betDraw2 ? 'block' : 'none';
 
   const saveBtn = lk
     ? '<div style="font-size:10px;color:var(--muted);text-align:center;padding:5px">🔒 Cerrado</div>'
@@ -2553,7 +2558,7 @@ function buildKoMatchCard(key, m, bets) {
     + '<span class="sd">-</span>'
     + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid)">'
     + '</div>'
-    + '<div id="kopenrow_' + bid + '">' + penHtml + '</div>'
+    + '<div id="kopenrow_' + bid + '" style="display:' + penDisplay + '">' + penHtml + '</div>'
     + saveBtn + savedBadge + ptsHtml
     + '</div></div>';
 }
