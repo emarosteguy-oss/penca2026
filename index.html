@@ -1910,16 +1910,26 @@ function setKoFilter(round,btn){
   renderKoMatches();
 }
 
-function onKoInput(bid){
+function onKoInput(bid, inputEl){
   if(!bid)return;
-  const hEl=document.getElementById('koh_'+bid);
-  const aEl=document.getElementById('koa_'+bid);
-  const row=document.getElementById('kopenrow_'+bid);
+  // Find elements relative to the input to avoid duplicate ID issues
+  let hEl, aEl, row;
+  if(inputEl) {
+    const card = inputEl.closest('.mbc');
+    if(card) {
+      hEl = card.querySelector('[id^="koh_"]');
+      aEl = card.querySelector('[id^="koa_"]');
+      row = card.querySelector('[id^="kopenrow_"]');
+    }
+  }
+  // Fallback to getElementById
+  if(!hEl) hEl = document.getElementById('koh_'+bid);
+  if(!aEl) aEl = document.getElementById('koa_'+bid);
+  if(!row) row = document.getElementById('kopenrow_'+bid);
   if(!hEl||!aEl||!row)return;
   const hv=hEl.value;
   const av=aEl.value;
   const isDraw = hv!=='' && av!=='' && parseInt(hv)===parseInt(av);
-  // Show pen selector when draw, hide otherwise
   row.style.display = isDraw ? 'block' : 'none';
 }
 
@@ -2214,9 +2224,9 @@ function renderKoMatches() {
       + '</div>'
       + '<div class="bet-lbl">Tu apuesta</div>'
       + '<div class="bet-row">'
-      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid)">'
+      + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.h!==undefined?bet.h:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid,this)">'
       + '<span class="sd">-</span>'
-      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid)">'
+      + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + (bet.a!==undefined?bet.a:'') + '" ' + (lk?'disabled':'') + ' data-bid="' + bid + '" oninput="onKoInput(this.dataset.bid,this)">'
       + '</div>'
       + '<div id="kopenrow_' + bid + '" style="display:' + penRowDisplay + '">'
       + '<div style="margin-top:6px"><label style="font-family:Barlow Condensed,sans-serif;font-size:10px;font-weight:700;color:var(--gold);display:block;margin-bottom:4px">¿QUIÉN GANA EN PENALES?</label>'
@@ -2554,9 +2564,9 @@ function buildKoMatchCard(key, m, bets) {
     + '</div>'
     + '<div class="bet-lbl">Tu apuesta</div>'
     + '<div class="bet-row">'
-    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid)">'
+    + '<input class="si" id="koh_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + hVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid,this)">'
     + '<span class="sd">-</span>'
-    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid)">'
+    + '<input class="si" id="koa_' + bid + '" type="number" min="0" max="20" placeholder="-" value="' + aVal + '" data-bid="' + bid + '"' + (lk?' disabled':'') + ' oninput="onKoInput(this.dataset.bid,this)">'
     + '</div>'
     + '<div id="kopenrow_' + bid + '" style="display:' + penDisplay + '">' + penHtml + '</div>'
     + saveBtn + savedBadge + ptsHtml
